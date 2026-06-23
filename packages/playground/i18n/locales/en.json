@@ -26,6 +26,15 @@
         "title": "Syntax reference",
         "subtitle": "Click any token to insert it at the cursor."
     },
+    "explain": {
+        "title": "Explanation",
+        "invalid": "Fix the regex to see an explanation."
+    },
+    "code": {
+        "title": "JS code",
+        "copy": "Copy",
+        "copied": "Code copied to clipboard"
+    },
     "test": {
         "title": "Test strings",
         "placeholder": "One input per line — each line is validated for a match.",

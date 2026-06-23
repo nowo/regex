@@ -26,6 +26,15 @@
         "title": "正则语法参考",
         "subtitle": "点击任意语法片段即可插入到光标处。"
     },
+    "explain": {
+        "title": "解释",
+        "invalid": "修正正则后显示解释。"
+    },
+    "code": {
+        "title": "JS 代码",
+        "copy": "复制",
+        "copied": "代码已复制到剪贴板"
+    },
     "test": {
         "title": "测试字符串",
         "placeholder": "每行输入一个 —— 逐行验证是否匹配。",

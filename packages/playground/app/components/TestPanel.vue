@@ -9,7 +9,7 @@ const { t } = useI18n()
 
 const testString = ref('')
 const replacement = ref('')
-const activeMethod = ref<MethodName>('test')
+const activeMethod = defineModel<MethodName>('activeMethod', { default: 'test' })
 
 // Badge always reflects `.test()` regardless of the selected tab.
 const testRun = computed(() => runMethod('test', props.pattern, props.flags, testString.value, ''))

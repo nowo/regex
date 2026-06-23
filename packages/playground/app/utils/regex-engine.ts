@@ -189,6 +189,38 @@ export function runMethod(method: MethodName, pattern: string, flags: string, te
     return { code, lines }
 }
 
+/** A copy-pasteable JS snippet for the selected method, destructuring any groups. */
+export function buildJsSnippet(pattern: string, flags: string, method: MethodName = 'test'): string {
+    const lit = toRegexLiteral(pattern, flags)
+    const litG = toRegexLiteral(pattern, withFlags(flags, 'g'))
+    const names = captureNames(pattern)
+    const count = names.length - 1
+    const vars = ['full', ...Array.from({ length: count }, (_, k) => names[k + 1] ?? `group${k + 1}`)]
+    const grab = count > 0 ? `\n  const [${vars.join(', ')}] = match` : ''
+    const global = flags.includes('g')
+
+    switch (method) {
+        case 'test':
+            return `const re = ${lit}\n\nif (re.test(str)) {\n  // matched\n}`
+        case 'exec':
+            return global
+                ? `const re = ${lit}\n\nlet match\nwhile ((match = re.exec(str)) !== null) {${grab}\n}`
+                : `const re = ${lit}\n\nconst match = re.exec(str)\nif (match) {${grab}\n}`
+        case 'match':
+            return global
+                ? `const re = ${lit}\n\n// with the g flag, match() returns all matched strings\nconst matches = str.match(re)`
+                : `const re = ${lit}\n\nconst match = str.match(re)\nif (match) {${grab}\n}`
+        case 'matchAll':
+            return `const re = ${litG}\n\nfor (const match of str.matchAll(re)) {${grab}\n}`
+        case 'search':
+            return `const re = ${lit}\n\nconst index = str.search(re) // -1 if not found`
+        case 'split':
+            return `const re = ${lit}\n\nconst parts = str.split(re)`
+        case 'replace':
+            return `const re = ${lit}\n\nconst result = str.replace(re, '${count > 0 ? '$1' : 'replacement'}')`
+    }
+}
+
 /** Split `text` into styled segments given highlight ranges (group beats match). */
 export function buildSegments(text: string, ranges: HighlightRange[]): Segment[] {
     const valid = ranges.filter(r => r.end > r.start)
