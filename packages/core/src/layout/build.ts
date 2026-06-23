@@ -322,7 +322,7 @@ function groupLabel(el: AST.CapturingGroup, capIdx: Map<AST.CapturingGroup, numb
 }
 
 /** Assign 1-based capture indices in source order. */
-function indexCapturingGroups(pattern: AST.Pattern): Map<AST.CapturingGroup, number> {
+export function indexCapturingGroups(pattern: AST.Pattern): Map<AST.CapturingGroup, number> {
     const map = new Map<AST.CapturingGroup, number>()
     let i = 0
 

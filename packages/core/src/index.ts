@@ -7,6 +7,8 @@ import { buildDiagram } from './layout/measure'
 import { parseRegex } from './parse'
 import { renderToSvg } from './render/svg'
 
+export { explainRegex } from './explain'
+export type { ExplainItem } from './explain'
 export { buildDiagram } from './layout/measure'
 export type { Diagram, GroupStyle, LayoutNode, RailNode, TerminalClass } from './layout/nodes'
 export { toRegexLiteral } from './literal'
