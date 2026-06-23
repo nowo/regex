@@ -158,8 +158,15 @@ function exportPng() {
     img.src = url
 }
 
-// --- Node hover → highlight the matching range in the input ---
+// --- Node hover → highlight the matching range in the input, and (for a
+// capturing group) the captured text in the test panel ---
 const highlight = ref<{ start: number, end: number } | null>(null)
+const activeGroup = ref<number | null>(null)
+
+function onHover(range: { start: number, end: number, group?: number } | null) {
+    highlight.value = range
+    activeGroup.value = range?.group ?? null
+}
 
 // --- Syntax reference: insert a token at the caret ---
 const patternInput = useTemplateRef<{ inputRef?: HTMLInputElement }>('patternInput')
@@ -249,8 +256,10 @@ function loadExample(ex: { pattern: string, flags: string }) {
                         </code>
                         <UButton icon="i-lucide-copy" size="xs" color="neutral" variant="ghost" :label="t('toolbar.copyRegex')" class="shrink-0" @click="copyRegex" />
                     </div>
-                    <RailroadDiagram :pattern="debounced.pattern" :flags="debounced.flags" @hover="highlight = $event" />
+                    <RailroadDiagram :pattern="debounced.pattern" :flags="debounced.flags" @hover="onHover" />
                 </UCard>
+
+                <TestPanel :pattern="debounced.pattern" :flags="debounced.flags" :active-group="activeGroup" />
 
                 <div class="space-y-2">
                     <p class="text-sm text-dimmed">

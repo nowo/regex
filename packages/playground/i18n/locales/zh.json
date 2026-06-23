@@ -25,5 +25,12 @@
     "ref": {
         "title": "正则语法参考",
         "subtitle": "点击任意语法片段即可插入到光标处。"
+    },
+    "test": {
+        "title": "测试字符串",
+        "placeholder": "每行输入一个 —— 逐行验证是否匹配。",
+        "matched": "匹配",
+        "full": "完全匹配",
+        "replacePlaceholder": "替换串（如 $1、$2）"
     }
 }

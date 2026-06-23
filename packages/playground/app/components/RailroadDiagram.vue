@@ -2,7 +2,7 @@
 import { buildDiagram, parseRegex, renderToSvg } from '@wzo/regex-diagram'
 
 const props = defineProps<{ pattern: string, flags?: string }>()
-const emit = defineEmits<{ hover: [range: { start: number, end: number } | null] }>()
+const emit = defineEmits<{ hover: [range: { start: number, end: number, group?: number } | null] }>()
 
 const result = computed(() => {
     const r = parseRegex(props.pattern, props.flags ?? '')
@@ -39,9 +39,11 @@ function onPointer(e: MouseEvent) {
     const node = (e.target as Element).closest?.('[data-start]') ?? null
     setActive(node)
     if (node) {
+        const group = node.getAttribute('data-group')
         emit('hover', {
             start: Number(node.getAttribute('data-start')),
             end: Number(node.getAttribute('data-end')),
+            group: group == null ? undefined : Number(group),
         })
     } else {
         emit('hover', null)

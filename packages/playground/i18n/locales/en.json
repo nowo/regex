@@ -25,5 +25,12 @@
     "ref": {
         "title": "Syntax reference",
         "subtitle": "Click any token to insert it at the cursor."
+    },
+    "test": {
+        "title": "Test strings",
+        "placeholder": "One input per line — each line is validated for a match.",
+        "matched": "matched",
+        "full": "full",
+        "replacePlaceholder": "Replacement (e.g. $1, $2)"
     }
 }
