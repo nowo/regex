@@ -104,7 +104,9 @@ function renderNode(node: LayoutNode): string {
         const hit = node.kind === 'repeat'
             ? `<rect class="rr-hit" x="0" y="0" width="${round(node.width)}" height="${round(node.height)}"/>`
             : ''
-        return `<g data-start="${node.start}" data-end="${node.end}">${hit}${inner}</g>`
+        // Capturing groups also carry their index so the UI can link them to match groups.
+        const group = node.refId != null ? ` data-group="${node.refId}"` : ''
+        return `<g data-start="${node.start}" data-end="${node.end}"${group}>${hit}${inner}</g>`
     }
     return inner
 }
