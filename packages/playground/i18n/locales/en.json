@@ -18,6 +18,8 @@
     "toolbar": {
         "copyLink": "Copy link",
         "copied": "Link copied to clipboard",
+        "copyRegex": "Copy regex",
+        "copiedRegex": "Regex copied to clipboard",
         "exportError": "Fix the pattern before exporting"
     },
     "ref": {

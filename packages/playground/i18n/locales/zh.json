@@ -18,6 +18,8 @@
     "toolbar": {
         "copyLink": "复制链接",
         "copied": "链接已复制到剪贴板",
+        "copyRegex": "复制正则",
+        "copiedRegex": "正则已复制到剪贴板",
         "exportError": "请先修正正则再导出"
     },
     "ref": {

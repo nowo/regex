@@ -1,11 +1,12 @@
 export default defineNuxtConfig({
     modules: [
         '@nuxt/ui',
-        '@nuxtjs/i18n', // 国际化（中英双语）
+        '@nuxtjs/i18n',
+        '@vueuse/nuxt',
     ],
     css: ['~/assets/css/main.css'],
     i18n: {
-        defaultLocale: 'en', // 英文为主：默认路由无前缀（/），中文带 /zh/ 前缀
+        defaultLocale: 'en',
         strategy: 'prefix_except_default',
         locales: [
             { code: 'en', name: 'English', language: 'en-US', file: 'en.json' },
