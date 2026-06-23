@@ -9,6 +9,7 @@ import { renderToSvg } from './render/svg'
 
 export { buildDiagram } from './layout/measure'
 export type { Diagram, GroupStyle, LayoutNode, RailNode, TerminalClass } from './layout/nodes'
+export { toRegexLiteral } from './literal'
 export { parseRegex } from './parse'
 export type { ParseFailure, ParseResult, ParseSuccess } from './parse'
 export { renderToSvg } from './render/svg'
