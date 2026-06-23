@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+/* Tailwind v4 resets <button> to cursor:default; restore the pointer for enabled buttons. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+}
+
 /*
  * Railroad diagram theming. The core renderer emits SVG using --rr-* custom
  * properties with light-mode fallbacks; we only need to override them for dark
