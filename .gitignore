@@ -1,0 +1,15 @@
+node_modules
+*.log
+dist
+.output
+.nuxt
+.env
+.idea/
+.DS_Store
+**/.DS_Store
+.DS_Store?
+backup
+.cache
+coverage
+.turbo
+.data

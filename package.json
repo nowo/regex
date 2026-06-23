@@ -1,0 +1,22 @@
+{
+    "name": "regex",
+    "type": "module",
+    "version": "0.0.0",
+    "private": true,
+    "packageManager": "pnpm@10.34.3",
+    "description": "regex monorepo — modern regular-expression railroad-diagram visualizer",
+    "scripts": {
+        "build": "pnpm -r --filter \"@wzo/regex-diagram\" build",
+        "test": "pnpm -r --filter \"@wzo/regex-diagram\" test",
+        "typecheck": "pnpm -r typecheck",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "play:dev": "pnpm --filter playground dev",
+        "play:build": "pnpm --filter playground build"
+    },
+    "devDependencies": {
+        "@antfu/eslint-config": "^7.4.3",
+        "eslint": "^9.38.0",
+        "typescript": "^5.9.3"
+    }
+}

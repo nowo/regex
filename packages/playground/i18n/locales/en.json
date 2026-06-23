@@ -1,0 +1,27 @@
+{
+    "home": {
+        "title": "Regular expression visualizer",
+        "description": "Visualize regular expressions as railroad diagrams — modern syntax, live preview.",
+        "placeholder": "Enter a regular expression",
+        "examples": "Examples"
+    },
+    "flags": {
+        "g": "global",
+        "i": "ignore case",
+        "m": "multiline",
+        "s": "dotAll",
+        "u": "unicode",
+        "y": "sticky",
+        "d": "indices",
+        "v": "unicodeSets"
+    },
+    "toolbar": {
+        "copyLink": "Copy link",
+        "copied": "Link copied to clipboard",
+        "exportError": "Fix the pattern before exporting"
+    },
+    "ref": {
+        "title": "Syntax reference",
+        "subtitle": "Click any token to insert it at the cursor."
+    }
+}

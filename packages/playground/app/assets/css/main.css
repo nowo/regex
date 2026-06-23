@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/*
+ * Railroad diagram theming. The core renderer emits SVG using --rr-* custom
+ * properties with light-mode fallbacks; we only need to override them for dark
+ * mode on an ancestor of the injected <svg>.
+ */
+/*
+ * The saturated boxes (green char-set pills, blue literals, yellow class
+ * containers, purple anchors) read fine as light "stickers" on a dark card, so
+ * dark mode only needs to lighten the rail and the muted caption/label text.
+ */
+.dark .rr-host {
+    --rr-rail: #64748b;
+    --rr-muted: #94a3b8;
+    --rr-group: #64748b;
+    --rr-cap-end: #94a3b8;
+    --rr-cap-end-bd: #cbd5e1;
+}
