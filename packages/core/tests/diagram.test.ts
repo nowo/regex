@@ -72,6 +72,52 @@ describe('buildDiagram', () => {
     })
 })
 
+describe('character class — v-flag set operations', () => {
+    it('subtraction expands its operands', () => {
+        const d = diagram('[\\p{L}--[aeiou]]', 'v')
+        expect(d.root.kind).toBe('charclass')
+        expect(d.root.texts?.[0]?.content).toBe('Subtract (A − B):')
+        // \p{L} is a leaf; [aeiou] becomes a nested set child
+        expect(d.root.items?.some(i => i.label === '\\p{L}')).toBe(true)
+        expect(d.root.children).toHaveLength(1)
+        expect(d.root.children[0]?.node.texts?.[0]?.content).toBe('One of:')
+    })
+
+    it('intersection lists operands under "All of:"', () => {
+        const d = diagram('[\\w&&\\d]', 'v')
+        expect(d.root.texts?.[0]?.content).toBe('All of:')
+        expect(d.root.items?.map(i => i.label)).toEqual(['Word', 'Digit'])
+    })
+
+    it('string disjunction \\q{} expands to its strings', () => {
+        const d = diagram('[\\q{ab|cd}]', 'v')
+        const child = d.root.children[0]?.node
+        expect(child?.items?.map(i => i.label)).toEqual(['ab', 'cd'])
+    })
+
+    it('a nested class becomes a nested set', () => {
+        const d = diagram('[a[b-d]]', 'v')
+        expect(d.root.kind).toBe('charclass')
+        expect(d.root.children).toHaveLength(1)
+    })
+})
+
+describe('back-reference links', () => {
+    it('a numeric backreference links to its group', () => {
+        const d = diagram('(a)\\1')
+        expect(d.links).toHaveLength(1)
+    })
+
+    it('a named backreference links to its group', () => {
+        const d = diagram('(?<x>a)\\k<x>')
+        expect(d.links).toHaveLength(1)
+    })
+
+    it('no links without a backreference', () => {
+        expect(diagram('(a)b').links).toHaveLength(0)
+    })
+})
+
 describe('renderToSvg / regexToSvg', () => {
     it('renders a self-contained svg element', () => {
         const svg = renderToSvg(diagram('a|b'))

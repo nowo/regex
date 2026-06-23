@@ -1,5 +1,5 @@
 import type { AST } from '@eslint-community/regexpp'
-import type { Diagram, LayoutNode, RailNode } from './nodes'
+import type { CCSet, Diagram, LayoutNode, RailNode } from './nodes'
 import { astToRail } from './build'
 import { GEO } from './nodes'
 
@@ -16,7 +16,13 @@ export function buildDiagram(pattern: AST.Pattern): Diagram {
     const rootY = pad
     const railY = pad + root.railY
     const width = root.width + lead * 2 + pad * 2
-    const height = root.height + pad * 2
+    let height = root.height + pad * 2
+
+    // Back-reference connector arcs (drawn beneath the diagram).
+    const { links, maxY } = buildLinks(root, rootX, rootY)
+    if (links.length > 0) {
+        height = Math.max(height, maxY + pad)
+    }
 
     return {
         width,
@@ -33,7 +39,57 @@ export function buildDiagram(pattern: AST.Pattern): Diagram {
             { x: pad, y: railY, kind: 'start' },
             { x: width - pad, y: railY, kind: 'end' },
         ],
+        links,
     }
+}
+
+/**
+ * Walk the laid-out tree to absolute coordinates, then connect each
+ * back-reference to its target capturing group with an arc beneath the diagram.
+ */
+function buildLinks(root: LayoutNode, rootX: number, rootY: number): { links: Diagram['links'], maxY: number } {
+    const groups = new Map<number, { x: number, bottom: number }>()
+    const refs: { x: number, bottom: number, target: number }[] = []
+
+    const walk = (node: LayoutNode, absX: number, absY: number): void => {
+        if (node.refId != null) {
+            groups.set(node.refId, { x: absX + node.width / 2, bottom: absY + node.height })
+        }
+        if (node.refTarget != null) {
+            refs.push({ x: absX + node.width / 2, bottom: absY + node.height, target: node.refTarget })
+        }
+        for (const c of node.children) {
+            walk(c.node, absX + c.x, absY + c.y)
+        }
+    }
+    walk(root, rootX, rootY)
+
+    const links: Diagram['links'] = []
+    let maxY = 0
+    for (const ref of refs) {
+        const target = groups.get(ref.target)
+        if (!target) {
+            continue
+        }
+        // Baseline below both endpoints; deeper for longer spans, capped.
+        const span = Math.abs(ref.x - target.x)
+        const base = Math.max(ref.bottom, target.bottom) + Math.min(34, 12 + span * 0.06)
+        maxY = Math.max(maxY, base)
+        links.push({
+            path: `M${round(ref.x)},${round(ref.bottom)} C${round(ref.x)},${round(base)} ${round(target.x)},${round(base)} ${round(target.x)},${round(target.bottom)}`,
+            arrow: arrowUp(target.x, target.bottom),
+        })
+    }
+    return { links, maxY }
+}
+
+/** Small up-pointing filled triangle, tip at (x, y). */
+function arrowUp(x: number, y: number): string {
+    return `M${round(x)},${round(y)} L${round(x - 4)},${round(y + 6)} L${round(x + 4)},${round(y + 6)} Z`
+}
+
+function round(n: number): number {
+    return Math.round(n * 100) / 100
 }
 
 /** Recursively measure a structural rail node into a positioned layout node. */
@@ -52,7 +108,7 @@ export function layout(node: RailNode): LayoutNode {
         case 'group':
             return measureGroup(layout(node.body), node)
         case 'charclass':
-            return measureCharClass(node)
+            return { ...measureCCSet(node.set), start: node.start, end: node.end }
     }
 }
 
@@ -70,6 +126,7 @@ function measureTerminal(node: Extract<RailNode, { kind: 'terminal' }>): LayoutN
         title: node.title,
         start: node.start,
         end: node.end,
+        refTarget: node.refTarget,
     }
 }
 
@@ -232,52 +289,67 @@ function measureGroup(body: LayoutNode, node: Extract<RailNode, { kind: 'group' 
         title: node.title,
         start: node.start,
         end: node.end,
+        refId: node.refId,
         children: [{ x: bodyX, y: pt, node: body }],
         paths: [
             `M0,${railY} H${bodyX}`,
             `M${bodyX + body.width},${railY} H${width}`,
         ],
-        texts: [{ x: width / 2, y: lh, content: node.label, anchor: 'middle', cls: 'grouplabel' }],
+        texts: [{ x: width / 2, y: lh, content: node.label, anchor: 'middle', cls: 'group-label' }],
     }
 }
 
-function measureCharClass(node: Extract<RailNode, { kind: 'charclass' }>): LayoutNode {
+/**
+ * Recursively measure a character-class set. Leaf entries become item boxes;
+ * nested sets become child layout nodes — both stacked vertically in a framed,
+ * headed container.
+ */
+function measureCCSet(set: CCSet): LayoutNode {
     const { ccHeaderH: hh, ccPadX: px, ccPadY: pv, ccItemH: ih, ccItemGap: ig, ccItemPadX: ipx, ccMinItemW: miw, charW } = GEO
-    const n = node.items.length
-    const innerW = Math.max(miw, ...node.items.map(it => it.label.length * charW + ipx * 2))
+
+    // Measure every row first to learn the column width.
+    const rows = set.items.map((entry) => {
+        if (entry.kind === 'leaf') {
+            const w = Math.max(miw, entry.label.length * charW + ipx * 2)
+            return { kind: 'leaf' as const, entry, w, h: ih }
+        }
+        const node = measureCCSet(entry)
+        return { kind: 'set' as const, node, w: node.width, h: node.height }
+    })
+    const innerW = Math.max(miw, ...rows.map(r => r.w))
     const width = innerW + px * 2
 
-    const contentH = n * ih + (n - 1) * ig
-    const boxH = pv * 2 + contentH
+    const contentH = rows.reduce((s, r) => s + r.h, 0) + ig * Math.max(0, rows.length - 1)
     const boxTop = hh
+    const boxH = pv * 2 + contentH
     const height = boxTop + boxH
     const railY = boxTop + boxH / 2
 
-    const items = node.items.map((it, i) => ({
-        x: px,
-        y: boxTop + pv + i * (ih + ig),
-        w: innerW,
-        h: ih,
-        label: it.label,
-        cls: it.cls,
-        title: it.title,
-        start: it.start,
-        end: it.end,
-    }))
+    const items: LayoutNode['items'] = []
+    const children: LayoutNode['children'] = []
+    let y = boxTop + pv
+    for (const r of rows) {
+        if (r.kind === 'leaf') {
+            items.push({ x: px, y, w: innerW, h: ih, label: r.entry.label, cls: r.entry.cls, title: r.entry.title, start: r.entry.start, end: r.entry.end })
+        } else {
+            children.push({ x: (width - r.node.width) / 2, y, node: r.node })
+        }
+        y += r.h + ig
+    }
 
     return {
         kind: 'charclass',
         width,
         height,
         railY,
-        children: [],
+        children,
         paths: [],
-        negate: node.negate,
-        start: node.start,
-        end: node.end,
+        negate: set.negate,
+        start: set.start,
+        end: set.end,
         box: { x: 0, y: boxTop, w: width, h: boxH },
         items,
-        texts: [{ x: width / 2, y: hh - 5, content: node.header, anchor: 'middle', cls: 'cchead' }],
+        texts: [{ x: width / 2, y: hh - 5, content: set.header, anchor: 'middle', cls: 'class-header' }],
     }
 }
 

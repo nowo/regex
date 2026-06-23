@@ -5,7 +5,7 @@
 // See DESIGN.md §4 (pipeline) and §6 (AST → railroad mapping).
 
 /** Visual class of a terminal box, drives styling in the renderer. */
-export type TerminalClass = 'literal' | 'charset' | 'charclass' | 'anchor' | 'backref'
+export type TerminalClass = 'literal' | 'charset' | 'anchor' | 'backref'
 
 /** Visual class of a group frame. */
 export type GroupStyle = 'capture' | 'group' | 'lookahead' | 'lookbehind'
@@ -13,8 +13,9 @@ export type GroupStyle = 'capture' | 'group' | 'lookahead' | 'lookbehind'
 /** Visual class of a character-class entry: a literal/range box vs a named set pill. */
 export type ItemClass = 'literal' | 'set'
 
-/** One entry inside a character-class container. */
-export interface CharClassItem {
+/** A leaf entry in a character class: a literal/range box or a named-set pill. */
+export interface CCLeaf {
+    kind: 'leaf'
     label: string
     cls: ItemClass
     title?: string
@@ -24,20 +25,35 @@ export interface CharClassItem {
 }
 
 /**
+ * A (possibly nested) character-class set: the top-level `[...]`, a nested class,
+ * a `v`-flag operation (`&&` / `--`), or a `\q{}` string disjunction.
+ */
+export interface CCSet {
+    kind: 'set'
+    header: string // 'One of:' | 'None of:' | 'All of:' | 'Subtract:' | …
+    items: CCEntry[]
+    negate?: boolean
+    start?: number
+    end?: number
+}
+
+export type CCEntry = CCLeaf | CCSet
+
+/**
  * A repeat's three independent decorations:
  *  - bypass:   a skip line over the body (min === 0, e.g. `?` `*`)
  *  - loop:     a loop-back arc under the body (unbounded, e.g. `*` `+`)
  *  - countBox: a dashed frame around the body for a bounded count (e.g. `{3}` `{2,5}`)
  */
 export type RailNode
-    = | { kind: 'terminal', label: string, cls: TerminalClass, title?: string, start?: number, end?: number }
+    = | { kind: 'terminal', label: string, cls: TerminalClass, title?: string, start?: number, end?: number, refTarget?: number }
         | { kind: 'wire' } // an empty sequence (epsilon) — drawn as a straight line
         | { kind: 'seq', items: RailNode[] }
         | { kind: 'choice', branches: RailNode[] }
         | { kind: 'repeat', body: RailNode, label: string, bypass: boolean, loop: boolean, countBox: boolean, start?: number, end?: number }
-        | { kind: 'group', body: RailNode, label: string, style: GroupStyle, title?: string, start?: number, end?: number }
-        // A character class `[...]`, expanded into a vertical "One of:" / "None of:" list.
-        | { kind: 'charclass', header: string, items: CharClassItem[], negate: boolean, start?: number, end?: number }
+        | { kind: 'group', body: RailNode, label: string, style: GroupStyle, title?: string, start?: number, end?: number, refId?: number }
+        // A character class `[...]`, expanded into a (possibly nested) set tree.
+        | { kind: 'charclass', set: CCSet, start?: number, end?: number }
 
 /** A child node placed at a local offset within its parent. */
 export interface Placed {
@@ -52,7 +68,7 @@ export interface TextItem {
     y: number
     content: string
     anchor: 'start' | 'middle' | 'end'
-    cls: 'count' | 'grouplabel' | 'cchead'
+    cls: 'count' | 'group-label' | 'class-header'
 }
 
 /** A measured character-class entry (a small box with its own label). */
@@ -96,6 +112,10 @@ export interface LayoutNode {
     /** Source range `[start, end)` in the pattern, for input highlighting. */
     start?: number
     end?: number
+    /** Capture index this group exposes (for back-reference links). */
+    refId?: number
+    /** Capture index a back-reference points at (for back-reference links). */
+    refTarget?: number
     /** Container box for a character class (the framed region below its header). */
     box?: { x: number, y: number, w: number, h: number }
     /** Dashed count frame for a bounded repeat (e.g. `{3}`). */
@@ -117,6 +137,8 @@ export interface Diagram {
     rails: string[]
     /** Start (left) and end (right) terminal caps. */
     caps: { x: number, y: number, kind: 'start' | 'end' }[]
+    /** Back-reference connector arcs (back-reference → target group), diagram coords. */
+    links: { path: string, arrow: string }[]
 }
 
 /** Geometry constants — tuned visually; see RailroadDiagram in the playground. */

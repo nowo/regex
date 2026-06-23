@@ -1,5 +1,5 @@
 import type { AST } from '@eslint-community/regexpp'
-import type { CharClassItem, RailNode } from './nodes'
+import type { CCEntry, CCSet, RailNode } from './nodes'
 
 /**
  * Convert a regexpp Pattern AST into a structural railroad tree.
@@ -66,12 +66,8 @@ function mapElement(el: AST.Element, capIdx: Map<AST.CapturingGroup, number>): R
             return { kind: 'terminal', label: charSetLabel(el), cls: 'charset', title: el.raw, start: el.start, end: el.end }
 
         case 'CharacterClass':
-            return mapCharacterClass(el)
-
         case 'ExpressionCharacterClass':
-            // v-flag set operations (e.g. [\p{L}--[a]]) are hard to stack meaningfully;
-            // show the raw source in a single box.
-            return { kind: 'terminal', label: el.raw, cls: 'charclass', title: el.negate ? 'none of' : 'one of', start: el.start, end: el.end }
+            return { kind: 'charclass', set: classSet(el), start: el.start, end: el.end }
 
         case 'Assertion':
             return mapAssertion(el, capIdx)
@@ -87,6 +83,7 @@ function mapElement(el: AST.Element, capIdx: Map<AST.CapturingGroup, number>): R
                 body: mapAlternatives(el.alternatives, capIdx),
                 start: el.start,
                 end: el.end,
+                refId: capIdx.get(el),
             }
 
         case 'Group':
@@ -99,8 +96,11 @@ function mapElement(el: AST.Element, capIdx: Map<AST.CapturingGroup, number>): R
                 end: el.end,
             }
 
-        case 'Backreference':
-            return { kind: 'terminal', label: el.raw, cls: 'backref', title: 'back-reference', start: el.start, end: el.end }
+        case 'Backreference': {
+            const resolved = Array.isArray(el.resolved) ? el.resolved[0] : el.resolved
+            const refTarget = resolved ? capIdx.get(resolved) : undefined
+            return { kind: 'terminal', label: el.raw, cls: 'backref', title: 'back-reference', start: el.start, end: el.end, refTarget }
+        }
 
         default:
             // Should be unreachable for valid patterns; show the raw source as a fallback.
@@ -108,24 +108,36 @@ function mapElement(el: AST.Element, capIdx: Map<AST.CapturingGroup, number>): R
     }
 }
 
-function mapCharacterClass(el: AST.CharacterClass): RailNode {
-    // An empty class (e.g. `[]`) has nothing to stack — keep the raw box.
-    if (el.elements.length === 0) {
-        return { kind: 'terminal', label: el.raw, cls: 'charclass', title: el.negate ? 'none of' : 'one of' }
-    }
+type ClassElement = AST.CharacterClass['elements'][number]
 
-    // Merge consecutive literal characters into one entry (e.g. `-.`), like regulex.
-    const items: CharClassItem[] = []
+/** A character class or `v`-flag expression class → a (possibly nested) set tree. */
+function classSet(el: AST.CharacterClass | AST.ExpressionCharacterClass): CCSet {
+    if (el.type === 'ExpressionCharacterClass') {
+        return exprSet(el)
+    }
+    return {
+        kind: 'set',
+        header: el.negate ? 'None of:' : 'One of:',
+        negate: el.negate,
+        items: classElements(el.elements),
+        start: el.start,
+        end: el.end,
+    }
+}
+
+/** Map class elements, merging consecutive literal characters into one entry (e.g. `-.`). */
+function classElements(elements: readonly ClassElement[]): CCEntry[] {
+    const out: CCEntry[] = []
     let run: string[] = []
     let runStart = 0
     let runEnd = 0
     const flush = (): void => {
         if (run.length > 0) {
-            items.push({ label: run.join(''), cls: 'literal', start: runStart, end: runEnd })
+            out.push({ kind: 'leaf', label: run.join(''), cls: 'literal', start: runStart, end: runEnd })
             run = []
         }
     }
-    for (const e of el.elements) {
+    for (const e of elements) {
         if (e.type === 'Character') {
             if (run.length === 0) {
                 runStart = e.start
@@ -134,31 +146,81 @@ function mapCharacterClass(el: AST.CharacterClass): RailNode {
             run.push(charLabel(e))
         } else {
             flush()
-            items.push(classItem(e))
+            out.push(classEntry(e))
         }
     }
     flush()
+    return out
+}
 
+function classEntry(e: ClassElement): CCEntry {
+    switch (e.type) {
+        case 'Character':
+            return { kind: 'leaf', label: charLabel(e), cls: 'literal', start: e.start, end: e.end }
+        case 'CharacterClassRange':
+            return { kind: 'leaf', label: `${charLabel(e.min)}-${charLabel(e.max)}`, cls: 'literal', start: e.start, end: e.end }
+        case 'CharacterSet':
+            return { kind: 'leaf', label: charSetLabel(e), cls: 'set', title: e.raw, start: e.start, end: e.end }
+        case 'CharacterClass':
+        case 'ExpressionCharacterClass':
+            return classSet(e)
+        case 'ClassStringDisjunction':
+            return {
+                kind: 'set',
+                header: 'One of:',
+                items: e.alternatives.map(s => ({
+                    kind: 'leaf' as const,
+                    label: s.elements.map(c => charLabel(c)).join('') || '(empty)',
+                    cls: 'literal' as const,
+                    start: s.start,
+                    end: s.end,
+                })),
+                start: e.start,
+                end: e.end,
+            }
+        default:
+            return { kind: 'leaf', label: (e as { raw?: string }).raw ?? '?', cls: 'literal' }
+    }
+}
+
+/** A `v`-flag operation class (`&&` / `--`) → a set whose header names the operation. */
+function exprSet(el: AST.ExpressionCharacterClass): CCSet {
+    const expr = el.expression
+    let header: string
+    let operands: ClassElement[]
+    if (expr.type === 'ClassIntersection') {
+        header = el.negate ? 'Not all of:' : 'All of:'
+        operands = flattenOp(expr, 'ClassIntersection')
+    } else if (expr.type === 'ClassSubtraction') {
+        header = el.negate ? 'Not (A − B):' : 'Subtract (A − B):'
+        operands = flattenOp(expr, 'ClassSubtraction')
+    } else {
+        header = el.negate ? 'None of:' : 'One of:'
+        operands = [expr as ClassElement]
+    }
     return {
-        kind: 'charclass',
+        kind: 'set',
+        header,
         negate: el.negate,
-        header: el.negate ? 'None of:' : 'One of:',
-        items,
+        items: operands.map(classEntry),
         start: el.start,
         end: el.end,
     }
 }
 
-function classItem(e: AST.CharacterClass['elements'][number]): CharClassItem {
-    switch (e.type) {
-        case 'CharacterClassRange':
-            return { label: `${charLabel(e.min)}-${charLabel(e.max)}`, cls: 'literal', start: e.start, end: e.end }
-        case 'CharacterSet':
-            return { label: charSetLabel(e), cls: 'set', title: e.raw, start: e.start, end: e.end }
-        default:
-            // Nested classes / string disjunctions (v flag) — show the raw source.
-            return { label: (e as { raw?: string }).raw ?? '?', cls: 'literal', start: e.start, end: e.end }
+/** Flatten a left-associative chain of the same operator into a flat operand list. */
+function flattenOp(expr: AST.ClassIntersection | AST.ClassSubtraction, type: 'ClassIntersection' | 'ClassSubtraction'): ClassElement[] {
+    const out: ClassElement[] = []
+    const walk = (e: AST.ClassIntersection | AST.ClassSubtraction | AST.ClassSetOperand): void => {
+        if (e.type === type) {
+            walk((e as AST.ClassIntersection | AST.ClassSubtraction).left)
+            out.push((e as AST.ClassIntersection | AST.ClassSubtraction).right as ClassElement)
+        } else {
+            out.push(e as ClassElement)
+        }
     }
+    walk(expr)
+    return out
 }
 
 function mapAssertion(el: AST.Assertion, capIdx: Map<AST.CapturingGroup, number>): RailNode {
