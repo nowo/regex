@@ -16,16 +16,11 @@ function toggleLocale() {
         </template>
 
         <template #right>
-            <UButton :label="locale === 'en' ? '中文' : 'EN'" icon="i-lucide-languages" color="neutral" variant="ghost" @click="toggleLocale" />
+            <UButton :label="locale === 'en' ? '中文' : 'EN'" icon="i-lucide-languages" color="neutral" variant="ghost"
+                @click="toggleLocale" />
             <UColorModeButton />
-            <UButton
-                icon="i-simple-icons-github"
-                color="neutral"
-                variant="ghost"
-                to="https://github.com/nowo/regex"
-                target="_blank"
-                aria-label="GitHub"
-            />
+            <UButton icon="i-simple-icons-github" color="neutral" variant="ghost" to="https://github.com/nowo/regex"
+                target="_blank" aria-label="GitHub" />
         </template>
     </UHeader>
 </template>

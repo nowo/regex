@@ -221,36 +221,26 @@ function loadExample(ex: { pattern: string, flags: string }) {
             <div class="space-y-5 min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-dimmed font-mono text-lg">/</span>
-                    <RegexField
-                        ref="patternInput" v-model="pattern" :highlight="highlight"
-                        :placeholder="t('home.placeholder')" class="flex-1 min-w-[12rem]" @paste="onPaste"
-                    />
+                    <RegexField ref="patternInput" v-model="pattern" :highlight="highlight"
+                        :placeholder="t('home.placeholder')" class="flex-1 min-w-[12rem]" @paste="onPaste" />
                     <span class="text-dimmed font-mono text-lg">/</span>
                     <UInput v-model="flags" class="w-20 font-mono" size="lg" placeholder="flags" spellcheck="false" />
                 </div>
 
                 <div class="flex flex-wrap gap-1.5">
-                    <UButton
-                        v-for="f in ALL_FLAGS" :key="f" :variant="flags.includes(f) ? 'solid' : 'outline'"
-                        :color="flags.includes(f) ? 'primary' : 'neutral'" size="xs" @click="toggleFlag(f)"
-                    >
+                    <UButton v-for="f in ALL_FLAGS" :key="f" :variant="flags.includes(f) ? 'solid' : 'outline'"
+                        :color="flags.includes(f) ? 'primary' : 'neutral'" size="xs" @click="toggleFlag(f)">
                         {{ t(`flags.${f}`) }}<span class="font-mono opacity-70 ms-0.5">({{ f }})</span>
                     </UButton>
                 </div>
 
                 <div class="flex flex-wrap gap-1.5">
-                    <UButton
-                        icon="i-lucide-link" color="neutral" variant="outline" size="sm"
-                        :label="t('toolbar.copyLink')" @click="copyLink"
-                    />
-                    <UButton
-                        icon="i-lucide-download" color="neutral" variant="outline" size="sm" label="SVG"
-                        @click="exportSvg"
-                    />
-                    <UButton
-                        icon="i-lucide-image" color="neutral" variant="outline" size="sm" label="PNG"
-                        @click="exportPng"
-                    />
+                    <UButton icon="i-lucide-link" color="neutral" variant="outline" size="sm"
+                        :label="t('toolbar.copyLink')" @click="copyLink" />
+                    <UButton icon="i-lucide-download" color="neutral" variant="outline" size="sm" label="SVG"
+                        @click="exportSvg" />
+                    <UButton icon="i-lucide-image" color="neutral" variant="outline" size="sm" label="PNG"
+                        @click="exportPng" />
                 </div>
 
                 <UCard>
@@ -258,20 +248,16 @@ function loadExample(ex: { pattern: string, flags: string }) {
                         <code class="flex-1 min-w-0 truncate font-mono text-sm">
                             <span class="text-dimmed">/</span><span class="text-highlighted">{{ literalSource }}</span><span class="text-dimmed">/</span><span class="text-primary">{{ debounced.flags }}</span>
                         </code>
-                        <UButton
-                            icon="i-lucide-copy" size="xs" color="neutral" variant="ghost"
-                            :label="t('toolbar.copyRegex')" class="shrink-0" @click="copyRegex"
-                        />
+                        <UButton icon="i-lucide-copy" size="xs" color="neutral" variant="ghost"
+                            :label="t('toolbar.copyRegex')" class="shrink-0" @click="copyRegex" />
                     </div>
                     <RailroadDiagram :pattern="debounced.pattern" :flags="debounced.flags" @hover="onHover" />
                 </UCard>
 
                 <ExplanationPanel :pattern="debounced.pattern" :flags="debounced.flags" />
 
-                <TestPanel
-                    v-model:active-method="activeMethod" :pattern="debounced.pattern" :flags="debounced.flags"
-                    :active-group="activeGroup"
-                />
+                <TestPanel v-model:active-method="activeMethod" :pattern="debounced.pattern" :flags="debounced.flags"
+                    :active-group="activeGroup" />
 
                 <CodePanel :pattern="debounced.pattern" :flags="debounced.flags" :method="activeMethod" />
 
@@ -280,10 +266,8 @@ function loadExample(ex: { pattern: string, flags: string }) {
                         {{ t('home.examples') }}
                     </p>
                     <div class="flex flex-wrap gap-2">
-                        <UButton
-                            v-for="ex in examples" :key="ex.label" variant="soft" color="neutral" size="sm"
-                            @click="loadExample(ex)"
-                        >
+                        <UButton v-for="ex in examples" :key="ex.label" variant="soft" color="neutral" size="sm"
+                            @click="loadExample(ex)">
                             {{ ex.label }}
                         </UButton>
                     </div>

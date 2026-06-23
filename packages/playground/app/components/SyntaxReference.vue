@@ -99,11 +99,9 @@ function pick(e: Entry): string {
                         <div class="flex items-start gap-2 rounded-md px-2 py-1 hover:bg-elevated transition-colors">
                             <span class="flex flex-wrap items-center gap-x-1 shrink-0 min-w-[4.5rem]">
                                 <template v-for="(tok, i) in e.tokens" :key="tok">
-                                    <button
-                                        type="button"
+                                    <button type="button"
                                         class="font-mono text-xs text-primary hover:underline"
-                                        @click="emit('insert', tok)"
-                                    >
+                                        @click="emit('insert', tok)">
                                         {{ tok }}
                                     </button>
                                     <span v-if="i < e.tokens.length - 1" class="text-dimmed text-xs">,</span>

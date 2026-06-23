@@ -59,16 +59,11 @@ function onLeave() {
 <template>
     <div class="rr-host">
         <!-- eslint-disable-next-line vue/no-v-html -- trusted SVG produced by our own renderer -->
-        <div
-            v-if="result.ok"
-            class="rr-scroll"
-            @mouseover="onPointer"
-            @mouseleave="onLeave"
-            v-html="result.svg"
-        />
+        <div v-if="result.ok" class="rr-scroll" @mouseover="onPointer" @mouseleave="onLeave" v-html="result.svg" />
         <div v-else class="space-y-2">
             <UAlert color="error" variant="subtle" icon="i-lucide-circle-alert" :title="result.message" />
-            <pre v-if="errorParts" class="rr-errline"><span>{{ errorParts.before }}</span><mark>{{ errorParts.at }}</mark><span>{{ errorParts.after }}</span></pre>
+            <pre v-if="errorParts"
+                class="rr-err-line"><span>{{ errorParts.before }}</span><mark>{{ errorParts.at }}</mark><span>{{ errorParts.after }}</span></pre>
         </div>
     </div>
 </template>
@@ -78,7 +73,7 @@ function onLeave() {
     overflow-x: auto;
 }
 
-.rr-errline {
+.rr-err-line {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.9rem;
     padding: 0.5rem 0.75rem;
@@ -87,7 +82,7 @@ function onLeave() {
     overflow-x: auto;
 }
 
-.rr-errline mark {
+.rr-err-line mark {
     background: var(--ui-error, #ef4444);
     color: #fff;
     border-radius: 2px;

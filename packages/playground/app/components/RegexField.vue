@@ -37,19 +37,10 @@ watch(model, () => nextTick(syncScroll))
     <div class="rf">
         <!-- whitespace-sensitive (white-space: pre) — must stay on one line, do not reformat -->
         <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
-        <div ref="backdropRef" class="rf-layer rf-backdrop" aria-hidden="true"><span>{{ parts.before }}</span><mark v-if="parts.mark">{{ parts.mark }}</mark><span>{{ parts.after }}</span></div>
-        <input
-            ref="inputRef"
-            v-model="model"
-            type="text"
-            class="rf-layer rf-input"
-            :placeholder="placeholder"
-            spellcheck="false"
-            autocomplete="off"
-            autocapitalize="off"
-            autocorrect="off"
-            @scroll="syncScroll"
-        >
+        <div ref="backdropRef" class="rf-layer rf-backdrop" aria-hidden="true"><span>{{ parts.before }}</span><mark
+                v-if="parts.mark">{{ parts.mark }}</mark><span>{{ parts.after }}</span></div>
+        <input ref="inputRef" v-model="model" type="text" class="rf-layer rf-input" :placeholder="placeholder"
+            spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" @scroll="syncScroll">
     </div>
 </template>
 
@@ -61,10 +52,12 @@ watch(model, () => nextTick(syncScroll))
     background: var(--ui-bg);
     overflow: hidden;
 }
+
 .rf:focus-within {
     border-color: var(--ui-primary);
     box-shadow: 0 0 0 2px color-mix(in oklch, var(--ui-primary) 25%, transparent);
 }
+
 .rf-layer {
     box-sizing: border-box;
     width: 100%;
@@ -77,6 +70,7 @@ watch(model, () => nextTick(syncScroll))
     white-space: pre;
     overflow-x: auto;
 }
+
 .rf-backdrop {
     position: absolute;
     inset: 0;
@@ -84,11 +78,13 @@ watch(model, () => nextTick(syncScroll))
     color: var(--ui-text);
     overflow: hidden;
 }
+
 .rf-backdrop mark {
     background: var(--rr-source-hl, #fde047);
     color: #1f2937;
     border-radius: 2px;
 }
+
 .rf-input {
     position: relative;
     display: block;
@@ -98,9 +94,11 @@ watch(model, () => nextTick(syncScroll))
     caret-color: var(--ui-text);
     outline: none;
 }
+
 .rf-input::placeholder {
     color: var(--ui-text-dimmed);
 }
+
 .rf-input::selection {
     background: color-mix(in oklch, var(--ui-primary) 30%, transparent);
 }

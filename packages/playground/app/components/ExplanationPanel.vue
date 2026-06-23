@@ -13,12 +13,10 @@ const items = computed(() => explainRegex(props.pattern, props.flags))
             {{ t('explain.title') }}
         </h2>
         <ul v-if="items && items.length">
-            <li
-                v-for="(it, i) in items"
+            <li v-for="(it, i) in items"
                 :key="i"
                 class="flex items-baseline gap-2 py-0.5 text-sm"
-                :style="{ paddingInlineStart: `${it.depth * 1.25}rem` }"
-            >
+                :style="{ paddingInlineStart: `${it.depth * 1.25}rem` }">
                 <code v-if="it.token" class="font-mono text-primary shrink-0">{{ it.token }}</code>
                 <span class="text-muted">{{ it.text }}</span>
             </li>

@@ -42,34 +42,26 @@ function lineSegments(r: LineRun) {
             <h2 class="text-sm font-semibold text-highlighted">
                 {{ t('test.title') }}
             </h2>
-            <UBadge
-                v-if="total" :color="passed === total ? 'success' : passed ? 'primary' : 'neutral'" variant="subtle"
-                size="sm"
-            >
+            <UBadge v-if="total" :color="passed === total ? 'success' : passed ? 'primary' : 'neutral'" variant="subtle"
+                size="sm">
                 {{ passed }}/{{ total }} {{ t('test.matched') }}
             </UBadge>
         </div>
 
-        <UTextarea
-            v-model="testString" :rows="5" :placeholder="t('test.placeholder')" class="w-full font-mono"
-            :ui="{ base: 'font-mono text-sm' }" autoresize spellcheck="false"
-        />
+        <UTextarea v-model="testString" :rows="5" :placeholder="t('test.placeholder')" class="w-full font-mono"
+            :ui="{ base: 'font-mono text-sm' }" autoresize spellcheck="false" />
 
         <!-- Method tabs -->
         <div class="mt-3 flex flex-wrap gap-1">
-            <UButton
-                v-for="m in METHODS" :key="m" :variant="activeMethod === m ? 'solid' : 'soft'"
+            <UButton v-for="m in METHODS" :key="m" :variant="activeMethod === m ? 'solid' : 'soft'"
                 :color="activeMethod === m ? 'primary' : 'neutral'" size="xs" class="font-mono"
-                @click="activeMethod = m"
-            >
+                @click="activeMethod = m">
                 {{ m }}
             </UButton>
         </div>
 
-        <UInput
-            v-if="activeMethod === 'replace'" v-model="replacement" :placeholder="t('test.replacePlaceholder')"
-            class="w-full font-mono mt-2" size="sm" spellcheck="false"
-        />
+        <UInput v-if="activeMethod === 'replace'" v-model="replacement" :placeholder="t('test.replacePlaceholder')"
+            class="w-full font-mono mt-2" size="sm" spellcheck="false" />
 
         <p class="mt-2 text-xs">
             <code class="font-mono text-muted">{{ run.code }}</code>
@@ -78,18 +70,13 @@ function lineSegments(r: LineRun) {
         <!-- Per-line results for the selected method -->
         <ul v-if="total" class="mt-1 divide-y divide-default">
             <li v-for="(r, i) in run.lines" :key="i" class="flex items-start gap-2 py-1.5 text-sm">
-                <UIcon
-                    v-if="r.ok !== undefined" :name="r.ok ? 'i-lucide-check' : 'i-lucide-x'"
-                    class="size-4 mt-0.5 shrink-0" :class="r.ok ? 'text-success' : 'text-error'"
-                />
+                <UIcon v-if="r.ok !== undefined" :name="r.ok ? 'i-lucide-check' : 'i-lucide-x'"
+                    class="size-4 mt-0.5 shrink-0" :class="r.ok ? 'text-success' : 'text-error'" />
                 <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
                 <code
-                    class="rr-line shrink-0 max-w-[45%] font-mono"
-                ><template v-for="(s, j) in lineSegments(r)" :key="j"><mark v-if="s.cls" :class="`rr-${s.cls}`">{{ s.text }}</mark><span v-else>{{ s.text }}</span></template></code>
-                <code
-                    v-if="activeMethod !== 'test'"
-                    class="font-mono text-primary break-all flex-1 text-dimmed"
-                >→ {{ r.result }}</code>
+                    class="rr-line shrink-0 max-w-[45%] font-mono"><template v-for="(s, j) in lineSegments(r)" :key="j"><mark v-if="s.cls" :class="`rr-${s.cls}`">{{ s.text }}</mark><span v-else>{{ s.text }}</span></template></code>
+                <code v-if="activeMethod !== 'test'"
+                    class="font-mono text-primary break-all flex-1 text-dimmed">→ {{ r.result }}</code>
                 <UBadge v-else-if="r.full" color="success" variant="soft" size="sm" class="shrink-0 ms-auto">
                     {{ t('test.full') }}
                 </UBadge>

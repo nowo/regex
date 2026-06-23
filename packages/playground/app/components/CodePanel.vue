@@ -18,13 +18,10 @@ async function copyCode() {
             <h2 class="text-sm font-semibold text-highlighted">
                 {{ t('code.title') }}
             </h2>
-            <UButton
-                icon="i-lucide-copy" size="xs" color="neutral" variant="ghost" :label="t('code.copy')"
-                class="ms-auto" @click="copyCode"
-            />
+            <UButton icon="i-lucide-copy" size="xs" color="neutral" variant="ghost" :label="t('code.copy')"
+                class="ms-auto" @click="copyCode" />
         </div>
         <pre
-            class="text-sm font-mono whitespace-pre-wrap break-words rounded-md bg-muted p-3 overflow-x-auto"
-        >{{ code }}</pre>
+            class="text-sm font-mono whitespace-pre-wrap break-words rounded-md bg-muted p-3 overflow-x-auto">{{ code }}</pre>
     </UCard>
 </template>
