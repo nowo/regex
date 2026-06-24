@@ -14,7 +14,7 @@ export type { Diagram, GroupStyle, LayoutNode, RailNode, TerminalClass } from '.
 export { toRegexLiteral } from './literal'
 export { parseRegex } from './parse'
 export type { ParseFailure, ParseResult, ParseSuccess } from './parse'
-export { renderToSvg } from './render/svg'
+export { renderToSvg, sourceColors } from './render/svg'
 export { SYNTAX_CATEGORIES } from './syntax'
 export type { SyntaxCategory } from './syntax'
 

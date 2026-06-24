@@ -1,6 +1,8 @@
 import type { Diagram, LayoutNode } from '../layout/nodes'
 import type { SyntaxCategory } from '../syntax'
+import { buildDiagram } from '../layout/measure'
 import { GEO } from '../layout/nodes'
+import { parseRegex } from '../parse'
 
 const ESC_RE = /[&<>"]/g
 
@@ -150,6 +152,24 @@ function renderSourceBand(diagram: Diagram, flags: string): { band: string, band
         bandH: SRC.ch + SRC.gap,
         bandW: round(SRC.x * 2 + cols * SRC.cw),
     }
+}
+
+/**
+ * Per-character syntax categories for a regex source — the same coloring the
+ * diagram's source band uses (including character-class entries split into
+ * charset/literal), exposed so other views can color the same regex identically.
+ * Returns null if the pattern (or flags) fail to parse; an entry is null for a
+ * character with no specific category (e.g. structural punctuation).
+ */
+export function sourceColors(source: string, flags = ''): (SyntaxCategory | null)[] | null {
+    const parsed = parseRegex(source, flags)
+    if (!parsed.ok) {
+        return null
+    }
+    const ranges: Span[] = []
+    const colors: Span[] = []
+    collectSpans(buildDiagram(parsed.ast).root, ranges, colors)
+    return Array.from({ length: source.length }, (_, i) => smallest(colors, i)?.cat ?? null)
 }
 
 /** Collect node source-ranges (for hover linking) and colored token spans (for the band). */

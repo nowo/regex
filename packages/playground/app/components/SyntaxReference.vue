@@ -104,10 +104,9 @@ function pick(e: Entry): string {
                             <span class="flex flex-wrap items-center gap-x-1 shrink-0 min-w-[4.5rem]">
                                 <template v-for="(tok, i) in e.tokens" :key="tok">
                                     <button type="button"
-                                        class="font-mono text-xs hover:underline"
-                                        :style="{ color: `var(--rr-syntax-${e.cat})` }"
+                                        class="text-xs hover:underline"
                                         @click="emit('insert', tok)">
-                                        {{ tok }}
+                                        <RegexCode :text="tok" :fallback-cat="e.cat" />
                                     </button>
                                     <span v-if="i < e.tokens.length - 1" class="text-dimmed text-xs">,</span>
                                 </template>

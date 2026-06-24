@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { explainRegex } from '@wzo/regex-diagram'
+import { explainRegex, sourceColors } from '@wzo/regex-diagram'
 
 const props = defineProps<{ pattern: string, flags: string }>()
 const { t } = useI18n()
 
 const items = computed(() => explainRegex(props.pattern, props.flags))
+// One coloring for the whole pattern; each line slices its own token's colors out
+// of it, so the explanation matches the diagram's source band character for character.
+const colors = computed(() => sourceColors(props.pattern, props.flags))
 </script>
 
 <template>
@@ -17,7 +20,10 @@ const items = computed(() => explainRegex(props.pattern, props.flags))
                 :key="i"
                 class="flex items-baseline gap-2 py-0.5 text-sm"
                 :style="{ paddingInlineStart: `${it.depth * 1.25}rem` }">
-                <code v-if="it.token" class="font-mono shrink-0" :style="{ color: `var(--rr-syntax-${it.cat})` }">{{ it.token }}</code>
+                <RegexCode v-if="it.token" class="shrink-0"
+                    :text="it.token"
+                    :colors="it.start != null && colors ? colors.slice(it.start, it.end) : undefined"
+                    :fallback-cat="it.cat" />
                 <span class="text-muted">{{ it.text }}</span>
             </li>
         </ul>
