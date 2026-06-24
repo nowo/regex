@@ -61,8 +61,8 @@ function onPointer(e: MouseEvent) {
             group = Number(g)
         }
     })
-    // Light up the source characters within the range.
-    root.querySelectorAll('.rr-src-char').forEach((c) => {
+    // Tint the source-band background cells within the range.
+    root.querySelectorAll('.rr-src-bg').forEach((c) => {
         const i = Number(c.getAttribute('data-i'))
         if (i >= start && i < end) {
             c.classList.add('rr-src-on')

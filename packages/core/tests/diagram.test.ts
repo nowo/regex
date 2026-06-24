@@ -140,14 +140,16 @@ describe('renderToSvg / regexToSvg', () => {
     })
 
     it('draws a token-colored source band linked to the diagram', () => {
-        const svg = renderToSvg(diagram('a[0-9]'))
-        // one source-band char group per source character, carrying its index
-        expect(svg.match(/class="rr-src-char/g) ?? []).toHaveLength(6)
+        const svg = renderToSvg(diagram('a[0-9]'), 'g')
+        // the full literal renders as one selectable <text> run, one <tspan> per pattern char
+        expect(svg).toContain('<text class="rr-src-text"')
+        expect(svg).toContain('textLength=')
+        expect(svg.match(/class="rr-src-char"/g) ?? []).toHaveLength(6)
         expect(svg).toContain('data-i="0"')
-        // the literal `a` is colored as a literal, the class `[0-9]` as a class
-        expect(svg).toContain('rr-src-char rr-src-literal')
-        expect(svg).toContain('rr-src-char rr-src-class')
-        // the `0-9` item char maps to the item range (narrower than the whole class)
+        // tokens are colored via the shared palette (literal for `a`, class for the brackets)
+        expect(svg).toContain('fill:var(--rr-syntax-literal,')
+        expect(svg).toContain('fill:var(--rr-syntax-class,')
+        // the `0-9` char maps to the item range (narrower than the whole class)
         expect(svg).toContain('data-i="2" data-start="2" data-end="5"')
     })
 })

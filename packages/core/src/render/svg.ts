@@ -11,6 +11,20 @@ const ESC_RE = /[&<>"]/g
 // highlight alignment regardless of the rendering font's real advance.
 const SRC = { cw: GEO.charW, ch: 22, gap: 12, x: GEO.pad }
 
+// Light-mode fallbacks for the shared syntax palette, so an exported standalone
+// SVG (with no --rr-syntax-* defined) still colors the source band correctly.
+const SYNTAX_HEX: Record<SyntaxCategory, string> = {
+    literal: '#3b82f6',
+    charset: '#16a34a',
+    class: '#d97706',
+    anchor: '#8b5cf6',
+    quantifier: '#c026d3',
+    group: '#e11d48',
+    lookaround: '#ea580c',
+    backref: '#0d9488',
+    alternation: '#64748b',
+}
+
 const STYLE = `<style>
 .rr-diagram{font-family:ui-sans-serif,system-ui,sans-serif}
 .rr-rail{fill:none;stroke:var(--rr-rail,#94a3b8);stroke-width:1.6}
@@ -55,26 +69,8 @@ const STYLE = `<style>
 .rr-link-arrow{fill:var(--rr-backref-bd,#0d9488);opacity:.8}
 .rr-src-text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;font-weight:600;fill:var(--rr-text,#0f172a)}
 .rr-src-flags{font-weight:400}
-.rr-src-hit{fill:transparent;pointer-events:fill;cursor:pointer}
-.rr-src-literal>.rr-src-text{fill:var(--rr-syntax-literal,#3b82f6)}
-.rr-src-charset>.rr-src-text{fill:var(--rr-syntax-charset,#16a34a)}
-.rr-src-class>.rr-src-text{fill:var(--rr-syntax-class,#d97706)}
-.rr-src-anchor>.rr-src-text{fill:var(--rr-syntax-anchor,#8b5cf6)}
-.rr-src-quantifier>.rr-src-text{fill:var(--rr-syntax-quantifier,#c026d3)}
-.rr-src-group>.rr-src-text{fill:var(--rr-syntax-group,#e11d48)}
-.rr-src-lookaround>.rr-src-text{fill:var(--rr-syntax-lookaround,#ea580c)}
-.rr-src-backref>.rr-src-text{fill:var(--rr-syntax-backref,#0d9488)}
-.rr-src-alternation>.rr-src-text{fill:var(--rr-syntax-alternation,#64748b)}
-.rr-src-on>.rr-src-hit{fill:var(--rr-hl-line,#10b981);fill-opacity:var(--rr-syntax-hl-opacity,.18)}
-.rr-src-literal.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-literal,#3b82f6)}
-.rr-src-charset.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-charset,#16a34a)}
-.rr-src-class.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-class,#d97706)}
-.rr-src-anchor.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-anchor,#8b5cf6)}
-.rr-src-quantifier.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-quantifier,#c026d3)}
-.rr-src-group.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-group,#e11d48)}
-.rr-src-lookaround.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-lookaround,#ea580c)}
-.rr-src-backref.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-backref,#0d9488)}
-.rr-src-alternation.rr-src-on>.rr-src-hit{fill:var(--rr-syntax-alternation,#64748b)}
+.rr-src-bg{fill-opacity:0;pointer-events:none}
+.rr-src-bg.rr-src-on{fill-opacity:var(--rr-syntax-hl-opacity,.18)}
 </style>`
 
 /**
@@ -122,33 +118,33 @@ function renderSourceBand(diagram: Diagram, flags: string): { band: string, band
     const colors: Span[] = []
     collectSpans(diagram.root, ranges, colors)
 
+    const cols = src.length + 2 + flags.length
     const ty = round(SRC.ch * 0.72)
-    const midX = (col: number): number => round(SRC.x + col * SRC.cw + SRC.cw / 2)
-    // A plain framing glyph (the slashes / flags around the pattern).
-    const plain = (col: number, ch: string): string => `<text class="rr-src-text" x="${midX(col)}" y="${ty}" text-anchor="middle">${esc(ch)}</text>`
+    const w = round(cols * SRC.cw)
 
-    const cells: string[] = [plain(0, '/')]
+    // Two layers. Below: a per-character hover-tint rect (pointer-events:none so it
+    // never blocks text selection). Above: a single <text> with one <tspan> per
+    // character — glyphs spread to an exact monospace grid via textLength, yet stay
+    // one selectable run so a manual selection + Ctrl+C yields the clean literal.
+    const bgs: string[] = []
+    const spans: string[] = ['<tspan>/</tspan>']
     for (let i = 0; i < src.length; i++) {
-        const col = i + 1 // shifted right by the leading slash
         const owner = smallest(ranges, i)
         const cat = smallest(colors, i)?.cat
         const range = owner ? { s: owner.s, e: owner.e } : { s: i, e: i + 1 }
-        // Hit rect first (below the glyph) so the hover tint sits behind colored text.
-        const cls = cat ? `rr-src-char rr-src-${cat}` : 'rr-src-char'
-        const hit = `<rect class="rr-src-hit" x="${round(SRC.x + col * SRC.cw)}" y="0" width="${round(SRC.cw)}" height="${SRC.ch}" rx="3"/>`
-        const text = `<text class="rr-src-text" x="${midX(col)}" y="${ty}" text-anchor="middle">${esc(src[i]!)}</text>`
-        cells.push(`<g class="${cls}" data-i="${i}" data-start="${range.s}" data-end="${range.e}">${hit}${text}</g>`)
+        const color = cat ? `var(--rr-syntax-${cat},${SYNTAX_HEX[cat]})` : 'var(--rr-hl-line,#10b981)'
+        bgs.push(`<rect class="rr-src-bg" data-i="${i}" x="${round(SRC.x + (i + 1) * SRC.cw)}" y="0" width="${round(SRC.cw)}" height="${SRC.ch}" rx="3" style="fill:${color}"/>`)
+        const style = cat ? ` style="fill:${color}"` : ''
+        spans.push(`<tspan class="rr-src-char" data-i="${i}" data-start="${range.s}" data-end="${range.e}"${style}>${esc(src[i]!)}</tspan>`)
     }
-    let col = src.length + 1
-    cells.push(plain(col++, '/'))
+    spans.push('<tspan>/</tspan>')
     for (const f of flags) {
-        // flags are not bolded — only the pattern body and its slashes are
-        cells.push(`<text class="rr-src-text rr-src-flags" x="${midX(col++)}" y="${ty}" text-anchor="middle">${esc(f)}</text>`)
+        spans.push(`<tspan class="rr-src-flags">${esc(f)}</tspan>`)
     }
 
-    const cols = src.length + 2 + flags.length
+    const text = `<text class="rr-src-text" x="${round(SRC.x)}" y="${ty}" textLength="${w}" lengthAdjust="spacing">${spans.join('')}</text>`
     return {
-        band: `<g class="rr-src">${cells.join('')}</g>`,
+        band: `<g class="rr-src">${bgs.join('')}${text}</g>`,
         bandH: SRC.ch + SRC.gap,
         bandW: round(SRC.x * 2 + cols * SRC.cw),
     }
