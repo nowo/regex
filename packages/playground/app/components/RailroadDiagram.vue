@@ -9,7 +9,7 @@ const result = computed(() => {
     if (!r.ok) {
         return { ok: false as const, message: r.message, index: r.index, where: r.where }
     }
-    return { ok: true as const, svg: renderToSvg(buildDiagram(r.ast)) }
+    return { ok: true as const, svg: renderToSvg(buildDiagram(r.ast), props.flags ?? '') }
 })
 
 // The pattern split around the error position, for an inline caret highlight.

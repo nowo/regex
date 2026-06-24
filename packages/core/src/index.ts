@@ -28,5 +28,5 @@ export function regexToSvg(source: string, flags = ''): string | null {
     if (!parsed.ok) {
         return null
     }
-    return renderToSvg(buildDiagram(parsed.ast))
+    return renderToSvg(buildDiagram(parsed.ast), flags)
 }

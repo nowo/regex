@@ -51,7 +51,8 @@ const STYLE = `<style>
 .rr-count{font-size:11px;fill:var(--rr-syntax-quantifier,#c026d3);font-weight:600}
 .rr-link{fill:none;stroke:var(--rr-backref-bd,#0d9488);stroke-width:1.4;stroke-dasharray:4 3;opacity:.8}
 .rr-link-arrow{fill:var(--rr-backref-bd,#0d9488);opacity:.8}
-.rr-src-text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;fill:var(--rr-text,#0f172a)}
+.rr-src-text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;font-weight:600;fill:var(--rr-text,#0f172a)}
+.rr-src-flags{font-weight:400}
 .rr-src-hit{fill:transparent;pointer-events:fill;cursor:pointer}
 .rr-src-literal>.rr-src-text{fill:var(--rr-syntax-literal,#3b82f6)}
 .rr-src-charset>.rr-src-text{fill:var(--rr-syntax-charset,#16a34a)}
@@ -80,7 +81,7 @@ const STYLE = `<style>
  * Colors use CSS custom properties with sensible fallbacks, so the output works
  * on its own yet can be themed (e.g. dark mode) by the host via `--rr-*` vars.
  */
-export function renderToSvg(diagram: Diagram): string {
+export function renderToSvg(diagram: Diagram, flags = ''): string {
     const body: string[] = []
 
     for (const d of diagram.rails) {
@@ -94,12 +95,10 @@ export function renderToSvg(diagram: Diagram): string {
     }
     body.push(`<g transform="translate(${diagram.rootX},${diagram.rootY})">${renderNode(diagram.root)}</g>`)
 
-    const { band, bandH } = renderSourceBand(diagram)
-    const content = bandH > 0
-        ? `${band}<g transform="translate(0,${round(bandH)})">${body.join('')}</g>`
-        : body.join('')
+    const { band, bandH, bandW } = renderSourceBand(diagram, flags)
+    const content = `${band}<g transform="translate(0,${round(bandH)})">${body.join('')}</g>`
 
-    const w = round(Math.max(diagram.width, SRC.x * 2 + diagram.source.length * SRC.cw))
+    const w = round(Math.max(diagram.width, bandW))
     const h = round(diagram.height + bandH)
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" class="rr-diagram">${STYLE}${content}</svg>`
 }
@@ -108,33 +107,49 @@ export function renderToSvg(diagram: Diagram): string {
 interface Span { s: number, e: number, cat?: SyntaxCategory }
 
 /**
- * Render the pattern source as a token-colored band above the diagram. Each char
- * gets its own `<g>` carrying `data-i` (for diagram→source highlight) and the
- * range of its smallest enclosing node (for source→diagram hover linking).
+ * Render the full regex literal — `/pattern/flags` — as a token-colored band above
+ * the diagram. Each pattern char gets its own `<g>` carrying `data-i` (for
+ * diagram→source highlight) and the range of its smallest enclosing node (for
+ * source→diagram hover linking); the framing slashes and the flags are plain,
+ * non-interactive glyphs. `data-start`/`data-i` stay relative to the pattern, so
+ * the leading slash only shifts where each char is drawn, not what it maps to.
  */
-function renderSourceBand(diagram: Diagram): { band: string, bandH: number } {
+function renderSourceBand(diagram: Diagram, flags: string): { band: string, bandH: number, bandW: number } {
     const src = diagram.source
-    if (!src) {
-        return { band: '', bandH: 0 }
-    }
-
     const ranges: Span[] = []
     const colors: Span[] = []
     collectSpans(diagram.root, ranges, colors)
 
-    const cells: string[] = []
+    const ty = round(SRC.ch * 0.72)
+    const midX = (col: number): number => round(SRC.x + col * SRC.cw + SRC.cw / 2)
+    // A plain framing glyph (the slashes / flags around the pattern).
+    const plain = (col: number, ch: string): string => `<text class="rr-src-text" x="${midX(col)}" y="${ty}" text-anchor="middle">${esc(ch)}</text>`
+
+    const cells: string[] = [plain(0, '/')]
     for (let i = 0; i < src.length; i++) {
-        const x = round(SRC.x + i * SRC.cw)
+        const col = i + 1 // shifted right by the leading slash
         const owner = smallest(ranges, i)
         const cat = smallest(colors, i)?.cat
         const range = owner ? { s: owner.s, e: owner.e } : { s: i, e: i + 1 }
         // Hit rect first (below the glyph) so the hover tint sits behind colored text.
         const cls = cat ? `rr-src-char rr-src-${cat}` : 'rr-src-char'
-        const hit = `<rect class="rr-src-hit" x="${x}" y="0" width="${round(SRC.cw)}" height="${SRC.ch}" rx="3"/>`
-        const text = `<text class="rr-src-text" x="${round(x + SRC.cw / 2)}" y="${round(SRC.ch * 0.72)}" text-anchor="middle">${esc(src[i]!)}</text>`
+        const hit = `<rect class="rr-src-hit" x="${round(SRC.x + col * SRC.cw)}" y="0" width="${round(SRC.cw)}" height="${SRC.ch}" rx="3"/>`
+        const text = `<text class="rr-src-text" x="${midX(col)}" y="${ty}" text-anchor="middle">${esc(src[i]!)}</text>`
         cells.push(`<g class="${cls}" data-i="${i}" data-start="${range.s}" data-end="${range.e}">${hit}${text}</g>`)
     }
-    return { band: `<g class="rr-src">${cells.join('')}</g>`, bandH: SRC.ch + SRC.gap }
+    let col = src.length + 1
+    cells.push(plain(col++, '/'))
+    for (const f of flags) {
+        // flags are not bolded — only the pattern body and its slashes are
+        cells.push(`<text class="rr-src-text rr-src-flags" x="${midX(col++)}" y="${ty}" text-anchor="middle">${esc(f)}</text>`)
+    }
+
+    const cols = src.length + 2 + flags.length
+    return {
+        band: `<g class="rr-src">${cells.join('')}</g>`,
+        bandH: SRC.ch + SRC.gap,
+        bandW: round(SRC.x * 2 + cols * SRC.cw),
+    }
 }
 
 /** Collect node source-ranges (for hover linking) and colored token spans (for the band). */
