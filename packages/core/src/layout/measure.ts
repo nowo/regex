@@ -31,6 +31,7 @@ export function buildDiagram(pattern: AST.Pattern): Diagram {
         root,
         rootX,
         rootY,
+        source: pattern.raw,
         rails: [
             `M${pad},${railY} H${rootX}`,
             `M${rootX + root.width},${railY} H${width - pad}`,
@@ -102,7 +103,7 @@ export function layout(node: RailNode): LayoutNode {
         case 'seq':
             return measureSeq(node.items.map(layout))
         case 'choice':
-            return measureChoice(node.branches.map(layout))
+            return measureChoice(node.branches.map(layout), node)
         case 'repeat':
             return measureRepeat(layout(node.body), node)
         case 'group':
@@ -172,7 +173,7 @@ function measureSeq(items: LayoutNode[]): LayoutNode {
     return { kind: 'seq', width: prevRight!, height, railY, children, paths }
 }
 
-function measureChoice(branches: LayoutNode[]): LayoutNode {
+function measureChoice(branches: LayoutNode[], node: Extract<RailNode, { kind: 'choice' }>): LayoutNode {
     if (branches.length === 1) {
         return branches[0]!
     }
@@ -208,7 +209,7 @@ function measureChoice(branches: LayoutNode[]): LayoutNode {
         paths.push(sCurve(cw + innerW, branchRail, width, railY))
     })
 
-    return { kind: 'choice', width, height, railY, children, paths }
+    return { kind: 'choice', width, height, railY, children, paths, start: node.start, end: node.end }
 }
 
 function measureRepeat(body: LayoutNode, node: Extract<RailNode, { kind: 'repeat' }>): LayoutNode {
@@ -243,16 +244,19 @@ function measureRepeat(body: LayoutNode, node: Extract<RailNode, { kind: 'repeat
         `M0,${railY} H${sx}`,
         `M${ex},${railY} H${width}`,
     ]
+    // Loop/bypass arcs are the quantifier's own structure — stroked in the
+    // quantifier color (via `accents`), unlike the rail-colored connector stubs above.
+    const accents: string[] = []
     const decorations: LayoutNode['decorations'] = []
 
     if (node.loop) {
         // Loop-back below the body (right → left), rounded rectangular routing.
-        paths.push(`M${bxR},${railY} V${loopY - arc} a${arc} ${arc} 0 0 1 ${-arc} ${arc} H${bxL + arc} a${arc} ${arc} 0 0 1 ${-arc} ${-arc} V${railY}`)
+        accents.push(`M${bxR},${railY} V${loopY - arc} a${arc} ${arc} 0 0 1 ${-arc} ${arc} H${bxL + arc} a${arc} ${arc} 0 0 1 ${-arc} ${-arc} V${railY}`)
         decorations.push({ d: arrowLeft(width / 2, loopY) })
     }
     if (node.bypass) {
         // Bypass over the body (left → right), rounded rectangular routing.
-        paths.push(`M${bxL},${railY} V${skipY + arc} a${arc} ${arc} 0 0 1 ${arc} ${-arc} H${bxR - arc} a${arc} ${arc} 0 0 1 ${arc} ${arc} V${railY}`)
+        accents.push(`M${bxL},${railY} V${skipY + arc} a${arc} ${arc} 0 0 1 ${arc} ${-arc} H${bxR - arc} a${arc} ${arc} 0 0 1 ${arc} ${arc} V${railY}`)
     }
 
     return {
@@ -262,6 +266,7 @@ function measureRepeat(body: LayoutNode, node: Extract<RailNode, { kind: 'repeat
         railY,
         children,
         paths,
+        accents,
         decorations,
         start: node.start,
         end: node.end,

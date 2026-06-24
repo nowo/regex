@@ -8,14 +8,43 @@ button:not(:disabled),
 }
 
 /*
- * Railroad diagram theming. The core renderer emits SVG using --rr-* custom
- * properties with light-mode fallbacks; we only need to override them for dark
- * mode on an ancestor of the injected <svg>.
+ * Shared regex syntax palette — the single source of truth for token colors.
+ * One color per SyntaxCategory (see core/src/syntax.ts), used by the diagram's
+ * source band and group/quantifier/lookaround accents, the syntax reference, and
+ * the explanation panel, so a token reads the same color in every view. Defined
+ * app-wide (not just inside .rr-host) so the side panels can reference them too.
  */
+:root {
+    --rr-syntax-literal: #3b82f6;
+    --rr-syntax-charset: #16a34a;
+    --rr-syntax-class: #d97706;
+    --rr-syntax-anchor: #8b5cf6;
+    --rr-syntax-quantifier: #c026d3;
+    --rr-syntax-group: #e11d48;
+    --rr-syntax-lookaround: #ea580c;
+    --rr-syntax-backref: #0d9488;
+    --rr-syntax-alternation: #64748b;
+}
+
+/* Brighter on dark so the colors read on a dark background. */
+.dark {
+    --rr-syntax-literal: #60a5fa;
+    --rr-syntax-charset: #4ade80;
+    --rr-syntax-class: #fbbf24;
+    --rr-syntax-anchor: #a78bfa;
+    --rr-syntax-quantifier: #e879f9;
+    --rr-syntax-group: #fb7185;
+    --rr-syntax-lookaround: #fb923c;
+    --rr-syntax-backref: #2dd4bf;
+    --rr-syntax-alternation: #94a3b8;
+}
+
 /*
- * The saturated boxes (green char-set pills, blue literals, yellow class
- * containers, purple anchors) read fine as light "stickers" on a dark card, so
- * dark mode only needs to lighten the rail and the muted caption/label text.
+ * Railroad diagram theming. The core renderer emits SVG using --rr-* custom
+ * properties with light-mode fallbacks; the saturated literal/charset/anchor/
+ * backref/class boxes read fine as light "stickers" on a dark card, so dark mode
+ * only needs to lighten the rail and the muted caption/label text. (Group,
+ * quantifier and lookaround accents pull straight from the syntax palette above.)
  */
 .dark .rr-host {
     --rr-rail: #64748b;
@@ -23,4 +52,14 @@ button:not(:disabled),
     --rr-group: #64748b;
     --rr-cap-end: #94a3b8;
     --rr-cap-end-bd: #cbd5e1;
+}
+
+/*
+ * Source-band hover tint strength. The hovered token gets a translucent wash in
+ * its own color; bump this for a stronger highlight, lower it for a subtler one.
+ */
+.rr-host {
+    --rr-syntax-hl-opacity: 0.18;
+    /* Hover glow spread (outer drop-shadow radius). Larger = wider halo. */
+    --rr-syntax-glow: 8px;
 }

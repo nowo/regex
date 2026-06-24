@@ -15,7 +15,12 @@ function mapAlternatives(alternatives: AST.Alternative[], capIdx: Map<AST.Captur
     if (alternatives.length === 1) {
         return mapAlternative(alternatives[0]!, capIdx)
     }
-    return { kind: 'choice', branches: alternatives.map(alt => mapAlternative(alt, capIdx)) }
+    return {
+        kind: 'choice',
+        branches: alternatives.map(alt => mapAlternative(alt, capIdx)),
+        start: alternatives[0]!.start,
+        end: alternatives.at(-1)!.end,
+    }
 }
 
 function mapAlternative(alt: AST.Alternative, capIdx: Map<AST.CapturingGroup, number>): RailNode {

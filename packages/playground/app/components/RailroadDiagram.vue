@@ -22,36 +22,58 @@ const errorParts = computed(() => {
     return { before: p.slice(0, i), at: p.slice(i, i + 1) || ' ', after: p.slice(i + 1) }
 })
 
-// Map a hovered diagram node back to its source range (carried in data-start/end),
-// and mark it active so the node itself highlights in sync with the input.
-let activeNode: Element | null = null
+// Hovering either a diagram node or a source-band character highlights both, plus
+// the input, via the shared source range carried in data-start/end. The diagram
+// node, the source chars within the range, and the match group all light up together.
+let activeKey = ''
 
-function setActive(node: Element | null) {
-    if (node === activeNode) {
-        return
-    }
-    activeNode?.classList.remove('rr-active')
-    node?.classList.add('rr-active')
-    activeNode = node
+function clearActive(root: Element) {
+    root.querySelectorAll('.rr-active').forEach(n => n.classList.remove('rr-active'))
+    root.querySelectorAll('.rr-src-on').forEach(n => n.classList.remove('rr-src-on'))
 }
 
 function onPointer(e: MouseEvent) {
-    const node = (e.target as Element).closest?.('[data-start]') ?? null
-    setActive(node)
-    if (node) {
-        const group = node.getAttribute('data-group')
-        emit('hover', {
-            start: Number(node.getAttribute('data-start')),
-            end: Number(node.getAttribute('data-end')),
-            group: group == null ? undefined : Number(group),
-        })
-    } else {
-        emit('hover', null)
+    const root = e.currentTarget as Element
+    const hit = (e.target as Element).closest?.('[data-start]') ?? null
+    if (!hit) {
+        if (activeKey) {
+            clearActive(root)
+            activeKey = ''
+            emit('hover', null)
+        }
+        return
     }
+    const start = Number(hit.getAttribute('data-start'))
+    const end = Number(hit.getAttribute('data-end'))
+    const key = `${start}:${end}`
+    if (key === activeKey) {
+        return
+    }
+    activeKey = key
+    clearActive(root)
+
+    // Light up the diagram node(s) sharing this exact range, and read the match group off them.
+    let group: number | undefined
+    root.querySelectorAll(`[data-start="${start}"][data-end="${end}"]:not(.rr-src-char)`).forEach((n) => {
+        n.classList.add('rr-active')
+        const g = n.getAttribute('data-group')
+        if (g != null) {
+            group = Number(g)
+        }
+    })
+    // Light up the source characters within the range.
+    root.querySelectorAll('.rr-src-char').forEach((c) => {
+        const i = Number(c.getAttribute('data-i'))
+        if (i >= start && i < end) {
+            c.classList.add('rr-src-on')
+        }
+    })
+    emit('hover', { start, end, group })
 }
 
-function onLeave() {
-    setActive(null)
+function onLeave(e: MouseEvent) {
+    clearActive(e.currentTarget as Element)
+    activeKey = ''
     emit('hover', null)
 }
 </script>

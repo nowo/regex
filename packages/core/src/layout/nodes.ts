@@ -49,7 +49,7 @@ export type RailNode
     = | { kind: 'terminal', label: string, cls: TerminalClass, title?: string, start?: number, end?: number, refTarget?: number }
         | { kind: 'wire' } // an empty sequence (epsilon) — drawn as a straight line
         | { kind: 'seq', items: RailNode[] }
-        | { kind: 'choice', branches: RailNode[] }
+        | { kind: 'choice', branches: RailNode[], start?: number, end?: number }
         | { kind: 'repeat', body: RailNode, label: string, bypass: boolean, loop: boolean, countBox: boolean, start?: number, end?: number }
         | { kind: 'group', body: RailNode, label: string, style: GroupStyle, title?: string, start?: number, end?: number, refId?: number }
         // A character class `[...]`, expanded into a (possibly nested) set tree.
@@ -102,6 +102,8 @@ export interface LayoutNode {
     children: Placed[]
     /** Connector path `d` strings (stroked, no fill), in local coordinates. */
     paths: string[]
+    /** Quantifier loop/bypass arcs — stroked in the quantifier color, not the rail color. */
+    accents?: string[]
     /** Terminal/group label, drawn by the renderer per `cls`/`groupStyle`. */
     label?: string
     cls?: TerminalClass
@@ -133,6 +135,8 @@ export interface Diagram {
     root: LayoutNode
     rootX: number
     rootY: number
+    /** The original pattern source, drawn as a token-colored band atop the diagram. */
+    source: string
     /** Lead-in / lead-out rail segments in diagram coordinates. */
     rails: string[]
     /** Start (left) and end (right) terminal caps. */

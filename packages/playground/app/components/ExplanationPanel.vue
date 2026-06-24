@@ -17,7 +17,7 @@ const items = computed(() => explainRegex(props.pattern, props.flags))
                 :key="i"
                 class="flex items-baseline gap-2 py-0.5 text-sm"
                 :style="{ paddingInlineStart: `${it.depth * 1.25}rem` }">
-                <code v-if="it.token" class="font-mono text-primary shrink-0">{{ it.token }}</code>
+                <code v-if="it.token" class="font-mono shrink-0" :style="{ color: `var(--rr-syntax-${it.cat})` }">{{ it.token }}</code>
                 <span class="text-muted">{{ it.text }}</span>
             </li>
         </ul>

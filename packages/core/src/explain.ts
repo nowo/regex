@@ -1,10 +1,12 @@
 import type { AST } from '@eslint-community/regexpp'
+import type { SyntaxCategory } from './syntax'
 import { indexCapturingGroups } from './layout/build'
 import { parseRegex } from './parse'
 
 /** One line of a plain-language regex explanation. `depth` drives indentation. */
 export interface ExplainItem {
     depth: number
+    cat: SyntaxCategory // the token's syntax category, for shared coloring
     token: string // the source slice this line describes
     text: string // plain-language description
 }
@@ -42,7 +44,7 @@ function explainAlternatives(alts: AST.Alternative[], depth: number, items: Expl
         return
     }
     alts.forEach((alt, i) => {
-        items.push({ depth, token: i === 0 ? '' : '|', text: `option ${i + 1}:` })
+        items.push({ depth, cat: 'alternation', token: i === 0 ? '' : '|', text: `option ${i + 1}:` })
         explainSequence(alt.elements, depth + 1, items, caps, src)
     })
 }
@@ -57,7 +59,7 @@ function explainSequence(elements: readonly AST.Element[], depth: number, items:
         const text = run.length === 1
             ? (str === ' ' ? 'a space' : `the character ${quote(str)}`)
             : `the text ${quote(str)}`
-        items.push({ depth, token: src.slice(run[0]!.start, run.at(-1)!.end), text })
+        items.push({ depth, cat: 'literal', token: src.slice(run[0]!.start, run.at(-1)!.end), text })
         run = []
     }
     for (const el of elements) {
@@ -75,38 +77,38 @@ function explainElement(el: AST.Element, depth: number, items: ExplainItem[], ca
     const token = slice(src, el)
     switch (el.type) {
         case 'Character':
-            items.push({ depth, token, text: `the character ${quote(cooked(el))}` })
+            items.push({ depth, cat: 'literal', token, text: `the character ${quote(cooked(el))}` })
             break
         case 'CharacterSet':
-            items.push({ depth, token, text: charSetText(el) })
+            items.push({ depth, cat: 'charset', token, text: charSetText(el) })
             break
         case 'CharacterClass':
-            items.push({ depth, token, text: charClassText(el) })
+            items.push({ depth, cat: 'class', token, text: charClassText(el) })
             break
         case 'ExpressionCharacterClass':
-            items.push({ depth, token, text: 'a set-operation character class (see the diagram)' })
+            items.push({ depth, cat: 'class', token, text: 'a set-operation character class (see the diagram)' })
             break
         case 'Assertion':
             explainAssertion(el, depth, token, items, caps, src)
             break
         case 'Quantifier':
-            items.push({ depth, token, text: `${quantifierText(el)}:` })
+            items.push({ depth, cat: 'quantifier', token, text: `${quantifierText(el)}:` })
             explainElement(el.element, depth + 1, items, caps, src)
             break
         case 'CapturingGroup': {
             const i = caps.get(el)
-            items.push({ depth, token, text: el.name ? `capturing group #${i} (named ${quote(el.name)}):` : `capturing group #${i}:` })
+            items.push({ depth, cat: 'group', token, text: el.name ? `capturing group #${i} (named ${quote(el.name)}):` : `capturing group #${i}:` })
             explainAlternatives(el.alternatives, depth + 1, items, caps, src)
             break
         }
         case 'Group':
-            items.push({ depth, token, text: 'a non-capturing group:' })
+            items.push({ depth, cat: 'group', token, text: 'a non-capturing group:' })
             explainAlternatives(el.alternatives, depth + 1, items, caps, src)
             break
         case 'Backreference': {
             const target = Array.isArray(el.resolved) ? el.resolved[0] : el.resolved
             const i = target ? caps.get(target) : undefined
-            items.push({ depth, token, text: i != null ? `a back-reference to group #${i}` : 'a back-reference' })
+            items.push({ depth, cat: 'backref', token, text: i != null ? `a back-reference to group #${i}` : 'a back-reference' })
             break
         }
     }
@@ -115,20 +117,20 @@ function explainElement(el: AST.Element, depth: number, items: ExplainItem[], ca
 function explainAssertion(el: AST.Assertion, depth: number, token: string, items: ExplainItem[], caps: Caps, src: string): void {
     switch (el.kind) {
         case 'start':
-            items.push({ depth, token, text: 'the start of the string (or line with the m flag)' })
+            items.push({ depth, cat: 'anchor', token, text: 'the start of the string (or line with the m flag)' })
             break
         case 'end':
-            items.push({ depth, token, text: 'the end of the string (or line with the m flag)' })
+            items.push({ depth, cat: 'anchor', token, text: 'the end of the string (or line with the m flag)' })
             break
         case 'word':
-            items.push({ depth, token, text: el.negate ? 'a position that is not a word boundary' : 'a word boundary' })
+            items.push({ depth, cat: 'anchor', token, text: el.negate ? 'a position that is not a word boundary' : 'a word boundary' })
             break
         case 'lookahead':
-            items.push({ depth, token, text: el.negate ? 'not followed by:' : 'followed by:' })
+            items.push({ depth, cat: 'lookaround', token, text: el.negate ? 'not followed by:' : 'followed by:' })
             explainAlternatives(el.alternatives, depth + 1, items, caps, src)
             break
         case 'lookbehind':
-            items.push({ depth, token, text: el.negate ? 'not preceded by:' : 'preceded by:' })
+            items.push({ depth, cat: 'lookaround', token, text: el.negate ? 'not preceded by:' : 'preceded by:' })
             explainAlternatives(el.alternatives, depth + 1, items, caps, src)
             break
     }
