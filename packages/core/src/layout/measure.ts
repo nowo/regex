@@ -108,7 +108,7 @@ export function layout(node: RailNode): LayoutNode {
             return measureRepeat(layout(node.body), node)
         case 'group':
             return measureGroup(layout(node.body), node)
-        case 'charclass':
+        case 'chars':
             return { ...measureCCSet(node.set), start: node.start, end: node.end }
     }
 }
@@ -343,7 +343,7 @@ function measureCCSet(set: CCSet): LayoutNode {
     }
 
     return {
-        kind: 'charclass',
+        kind: 'chars',
         width,
         height,
         railY,

@@ -200,7 +200,7 @@ function colorCat(node: LayoutNode): SyntaxCategory | undefined {
     switch (node.kind) {
         case 'terminal':
             return node.cls
-        case 'charclass':
+        case 'chars':
             return 'class'
         case 'group':
             return node.groupStyle === 'lookahead' || node.groupStyle === 'lookbehind' ? 'lookaround' : 'group'
@@ -250,8 +250,8 @@ function renderNode(node: LayoutNode): string {
         parts.push(renderTerminal(node))
     } else if (node.kind === 'group') {
         parts.push(renderGroup(node))
-    } else if (node.kind === 'charclass') {
-        parts.push(renderCharClass(node))
+    } else if (node.kind === 'chars') {
+        parts.push(renderChars(node))
     }
 
     if (node.texts) {
@@ -302,7 +302,7 @@ function renderGroup(node: LayoutNode): string {
     return `${title}<rect class="rr-group rr-group-${node.groupStyle}" x="0" y="0" width="${round(node.width)}" height="${round(node.height)}" rx="8"${dashed}/>`
 }
 
-function renderCharClass(node: LayoutNode): string {
+function renderChars(node: LayoutNode): string {
     const parts: string[] = []
     if (node.box) {
         const b = node.box

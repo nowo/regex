@@ -43,14 +43,14 @@ describe('buildDiagram', () => {
 
     it('a character class expands into stacked items', () => {
         const d = diagram('[0-9a-z_]')
-        expect(d.root.kind).toBe('charclass')
+        expect(d.root.kind).toBe('chars')
         expect(d.root.items?.map(i => i.label)).toEqual(['0-9', 'a-z', '_'])
         expect(d.root.texts?.[0]?.content).toBe('One of:')
     })
 
     it('a negated character class is marked "None of:"', () => {
         const d = diagram('[^<>]')
-        expect(d.root.kind).toBe('charclass')
+        expect(d.root.kind).toBe('chars')
         expect(d.root.negate).toBe(true)
         expect(d.root.texts?.[0]?.content).toBe('None of:')
     })
@@ -75,7 +75,7 @@ describe('buildDiagram', () => {
 describe('character class — v-flag set operations', () => {
     it('subtraction expands its operands', () => {
         const d = diagram('[\\p{L}--[aeiou]]', 'v')
-        expect(d.root.kind).toBe('charclass')
+        expect(d.root.kind).toBe('chars')
         expect(d.root.texts?.[0]?.content).toBe('Subtract (A − B):')
         // \p{L} is a leaf; [aeiou] becomes a nested set child
         expect(d.root.items?.some(i => i.label === '\\p{L}')).toBe(true)
@@ -97,7 +97,7 @@ describe('character class — v-flag set operations', () => {
 
     it('a nested class becomes a nested set', () => {
         const d = diagram('[a[b-d]]', 'v')
-        expect(d.root.kind).toBe('charclass')
+        expect(d.root.kind).toBe('chars')
         expect(d.root.children).toHaveLength(1)
     })
 })

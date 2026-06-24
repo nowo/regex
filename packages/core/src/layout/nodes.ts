@@ -53,7 +53,7 @@ export type RailNode
         | { kind: 'repeat', body: RailNode, label: string, bypass: boolean, loop: boolean, countBox: boolean, start?: number, end?: number }
         | { kind: 'group', body: RailNode, label: string, style: GroupStyle, title?: string, start?: number, end?: number, refId?: number }
         // A character class `[...]`, expanded into a (possibly nested) set tree.
-        | { kind: 'charclass', set: CCSet, start?: number, end?: number }
+        | { kind: 'chars', set: CCSet, start?: number, end?: number }
 
 /** A child node placed at a local offset within its parent. */
 export interface Placed {

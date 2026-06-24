@@ -72,7 +72,7 @@ function mapElement(el: AST.Element, capIdx: Map<AST.CapturingGroup, number>): R
 
         case 'CharacterClass':
         case 'ExpressionCharacterClass':
-            return { kind: 'charclass', set: classSet(el), start: el.start, end: el.end }
+            return { kind: 'chars', set: classSet(el), start: el.start, end: el.end }
 
         case 'Assertion':
             return mapAssertion(el, capIdx)
