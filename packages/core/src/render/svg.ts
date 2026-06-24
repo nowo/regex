@@ -153,6 +153,10 @@ function collectSpans(node: LayoutNode, ranges: Span[], colors: Span[]): void {
     for (const it of node.items ?? []) {
         if (it.start != null && it.end != null) {
             ranges.push({ s: it.start, e: it.end })
+            // Color class entries by kind, mirroring the diagram's item boxes:
+            // shorthand sets (\d \w \s …) read as charset, everything else as a literal.
+            // The enclosing `[...]` keeps the class color on its brackets (narrowest span wins).
+            colors.push({ s: it.start, e: it.end, cat: it.cls === 'set' ? 'charset' : 'literal' })
         }
     }
     for (const c of node.children) {
@@ -279,8 +283,10 @@ function renderCharClass(node: LayoutNode): string {
         const rx = it.cls === 'set' ? it.h / 2 : 5
         const textCls = it.cls === 'set' ? 'rr-text rr-text-on' : 'rr-text'
         const data = it.start != null && it.end != null ? ` data-start="${it.start}" data-end="${it.end}"` : ''
+        // Hover glow follows the entry's kind (charset/literal), matching its box color.
+        const catClass = it.cls === 'set' ? 'rr-cat-charset' : 'rr-cat-literal'
         parts.push(
-            `<g class="rr-node rr-cat-class"${data}>${title}`
+            `<g class="rr-node ${catClass}"${data}>${title}`
             + `<rect class="rr-class-item rr-class-item-${it.cls}" x="${round(it.x)}" y="${round(it.y)}" width="${round(it.w)}" height="${round(it.h)}" rx="${round(rx)}"/>`
             + `<text class="${textCls}" x="${round(it.x + it.w / 2)}" y="${round(it.y + it.h / 2)}" text-anchor="middle" dominant-baseline="central">${esc(it.label)}</text>`
             + `</g>`,
