@@ -57,13 +57,8 @@ async function copyLink() {
     toast.add({ title: t('toolbar.copied'), icon: 'i-lucide-check', color: 'success' })
 }
 
-// The full, valid regex literal shown above the diagram and copied by the button.
+// The full, valid regex literal, copied by the copy-regex button.
 const literal = computed(() => toRegexLiteral(debounced.value.pattern, debounced.value.flags))
-// Just the escaped source (between the slashes), for the coloured display.
-const literalSource = computed(() => {
-    const f = debounced.value.flags
-    return literal.value.slice(1, literal.value.length - f.length - 1)
-})
 
 async function copyRegex() {
     await copy(literal.value)
@@ -235,6 +230,8 @@ function loadExample(ex: { pattern: string, flags: string }) {
                 </div>
 
                 <div class="flex flex-wrap gap-1.5">
+                    <UButton icon="i-lucide-copy" color="neutral" variant="outline" size="sm"
+                        :label="t('toolbar.copyRegex')" @click="copyRegex" />
                     <UButton icon="i-lucide-link" color="neutral" variant="outline" size="sm"
                         :label="t('toolbar.copyLink')" @click="copyLink" />
                     <UButton icon="i-lucide-download" color="neutral" variant="outline" size="sm" label="SVG"
@@ -244,13 +241,6 @@ function loadExample(ex: { pattern: string, flags: string }) {
                 </div>
 
                 <UCard>
-                    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-default">
-                        <code class="flex-1 min-w-0 truncate font-mono text-sm">
-                            <span class="text-dimmed">/</span><span class="text-highlighted">{{ literalSource }}</span><span class="text-dimmed">/</span><span class="text-primary">{{ debounced.flags }}</span>
-                        </code>
-                        <UButton icon="i-lucide-copy" size="xs" color="neutral" variant="ghost"
-                            :label="t('toolbar.copyRegex')" class="shrink-0" @click="copyRegex" />
-                    </div>
                     <RailroadDiagram :pattern="debounced.pattern" :flags="debounced.flags" @hover="onHover" />
                 </UCard>
 
