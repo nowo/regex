@@ -15,7 +15,7 @@
         "play:build": "pnpm --filter playground build"
     },
     "devDependencies": {
-        "@antfu/eslint-config": "^7.4.3",
+        "@wzo/eslint-config": "^0.0.2",
         "eslint": "^9.38.0",
         "typescript": "^5.9.3"
     }

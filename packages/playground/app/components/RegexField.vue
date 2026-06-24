@@ -15,13 +15,20 @@ const inputRef = ref<HTMLInputElement>()
 const backdropRef = ref<HTMLDivElement>()
 defineExpose({ inputRef })
 
-const parts = computed(() => {
+const ESC_RE = /[&<>]/g
+function esc(s: string): string {
+    return s.replace(ESC_RE, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'))
+}
+
+// The visible text, with the highlighted range wrapped in <mark>. Rendered via
+// v-html (each piece escaped) so it stays whitespace-exact and formatter-proof.
+const backdropHtml = computed(() => {
     const v = model.value
     const h = props.highlight
     if (!h || h.start >= h.end) {
-        return { before: v, mark: '', after: '' }
+        return esc(v)
     }
-    return { before: v.slice(0, h.start), mark: v.slice(h.start, h.end), after: v.slice(h.end) }
+    return `${esc(v.slice(0, h.start))}<mark>${esc(v.slice(h.start, h.end))}</mark>${esc(v.slice(h.end))}`
 })
 
 function syncScroll() {
@@ -35,10 +42,8 @@ watch(model, () => nextTick(syncScroll))
 
 <template>
     <div class="rf">
-        <!-- whitespace-sensitive (white-space: pre) — must stay on one line, do not reformat -->
-        <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
-        <div ref="backdropRef" class="rf-layer rf-backdrop" aria-hidden="true"><span>{{ parts.before }}</span><mark
-                v-if="parts.mark">{{ parts.mark }}</mark><span>{{ parts.after }}</span></div>
+        <!-- eslint-disable-next-line vue/no-v-html -- each piece is escaped above -->
+        <div ref="backdropRef" class="rf-layer rf-backdrop" aria-hidden="true" v-html="backdropHtml" />
         <input ref="inputRef" v-model="model" type="text" class="rf-layer rf-input" :placeholder="placeholder"
             spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" @scroll="syncScroll">
     </div>
