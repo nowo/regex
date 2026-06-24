@@ -190,9 +190,9 @@ const examples = [
     { label: 'Date', pattern: '(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})', flags: '' },
     { label: 'Phone', pattern: '^\\(?(\\d{3})\\)?[-.\\s]?(\\d{3})[-.\\s]?(\\d{4})$', flags: '' },
     { label: 'Email', pattern: '[\\w.+-]+@[\\w-]+\\.[\\w.-]+', flags: '' },
-    { label: 'URL', pattern: '(https?|ftp)://[^\\s/$.?#].[^\\s]*', flags: 'i' },
-    { label: 'Hex color', pattern: '#[0-9a-fA-F]{6}\\b', flags: '' },
-    { label: 'Alternation', pattern: 'a|b|c', flags: '' },
+    { label: 'URL', pattern: '(?:https?|ftp)://[^\\s/$.?#].\\S*', flags: 'i' },
+    { label: 'Hex color', pattern: '#[0-9a-f]{6}\\b', flags: 'i' },
+    { label: 'Alternation', pattern: 'GET|POST|PUT', flags: '' },
 ]
 
 function loadExample(ex: { pattern: string, flags: string }) {
