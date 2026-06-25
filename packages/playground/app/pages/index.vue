@@ -86,6 +86,15 @@ function onPaste(e: ClipboardEvent) {
 // --- Flags ---
 const ALL_FLAGS = ['g', 'i', 'm', 's', 'u', 'y', 'd', 'v'] as const
 
+// The flags input stays a real <input> (free typing + placeholder); the candidate
+// list is a plain dropdown opened on focus and closed on outside click.
+const flagsOpen = ref(false)
+const flagsWrap = useTemplateRef<HTMLElement>('flagsWrap')
+onClickOutside(flagsWrap, () => {
+    flagsOpen.value = false
+})
+
+// Toggle a flag from the picker; u and v are mutually exclusive.
 function toggleFlag(f: string) {
     const set = new Set(flags.value.split(''))
     if (set.has(f)) {
@@ -232,21 +241,29 @@ function loadExample(ex: { pattern: string, flags: string }) {
             <div class="space-y-5 min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-dimmed font-mono text-lg">/</span>
-                    <RegexField ref="patternInput" v-model="pattern" :flags="flags" :highlight="highlight" @caret="onCaret"
-                        :placeholder="t('home.placeholder')" class="flex-1 min-w-[12rem]" @paste="onPaste" />
+                    <RegexField ref="patternInput" v-model="pattern" :flags="flags" :highlight="highlight"
+                        @caret="onCaret" :placeholder="t('home.placeholder')" class="flex-1 min-w-[12rem]"
+                        @paste="onPaste" />
                     <span class="text-dimmed font-mono text-lg">/</span>
-                    <UInput v-model="flags" class="w-20 font-mono" size="lg" placeholder="flags" spellcheck="false" />
+                    <div ref="flagsWrap" class="relative">
+                        <UInput v-model="flags" class="w-24 font-mono" size="lg" placeholder="flags" spellcheck="false"
+                            :aria-label="t('flags.label')" @focus="flagsOpen = true" />
+                        <div v-if="flagsOpen"
+                            class="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-default bg-default p-1 shadow-lg">
+                            <button v-for="f in ALL_FLAGS" :key="f" type="button"
+                                class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-elevated"
+                                @click="toggleFlag(f)">
+                                <UIcon name="i-lucide-check" class="size-4 shrink-0"
+                                    :class="flags.includes(f) ? 'text-primary' : 'invisible'" />
+                                <span class="flex-1 text-left">{{ t(`flags.${f}`) }}</span>
+                                <span class="font-mono text-xs text-dimmed">{{ f }}</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex flex-wrap gap-1.5">
-                    <UButton v-for="f in ALL_FLAGS" :key="f" :variant="flags.includes(f) ? 'solid' : 'outline'"
-                        :color="flags.includes(f) ? 'primary' : 'neutral'" size="xs" @click="toggleFlag(f)">
-                        {{ t(`flags.${f}`) }}<span class="font-mono opacity-70 ms-0.5">({{ f }})</span>
-                    </UButton>
-                </div>
-
-                <div class="flex flex-wrap gap-1.5">
-                    <UButton icon="i-lucide-copy" color="neutral" variant="outline" size="sm"
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <UButton icon="i-lucide-copy" color="primary" variant="outline" size="sm"
                         :label="t('toolbar.copyRegex')" @click="copyRegex" />
                     <UButton icon="i-lucide-link" color="neutral" variant="outline" size="sm"
                         :label="t('toolbar.copyLink')" @click="copyLink" />

@@ -6,6 +6,7 @@
         "examples": "Examples"
     },
     "flags": {
+        "label": "Regex flags",
         "g": "global",
         "i": "ignore case",
         "m": "multiline",
