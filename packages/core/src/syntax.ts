@@ -18,16 +18,3 @@ export type SyntaxCategory
         | 'lookaround' // (?= (?! (?<= (?<!
         | 'backref' // \1 \k<name>
         | 'alternation' // |
-
-/** All categories, in a stable order (e.g. for legends). */
-export const SYNTAX_CATEGORIES: readonly SyntaxCategory[] = [
-    'literal',
-    'charset',
-    'class',
-    'anchor',
-    'quantifier',
-    'group',
-    'lookaround',
-    'backref',
-    'alternation',
-]

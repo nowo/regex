@@ -7,6 +7,7 @@ import { buildDiagram } from './layout/measure'
 import { parseRegex } from './parse'
 import { renderToSvg } from './render/svg'
 
+export { sourceColors, sourceRanges } from './analyze'
 export { explainRegex } from './explain'
 export type { ExplainItem } from './explain'
 export { buildDiagram } from './layout/measure'
@@ -14,8 +15,7 @@ export type { Diagram, GroupStyle, LayoutNode, RailNode, TerminalClass } from '.
 export { toRegexLiteral } from './literal'
 export { lintRegex, parseRegex } from './parse'
 export type { ParseFailure, ParseResult, ParseSuccess, RegexIssue } from './parse'
-export { renderToSvg, sourceColors, sourceRanges } from './render/svg'
-export { SYNTAX_CATEGORIES } from './syntax'
+export { renderToSvg } from './render/svg'
 export type { SyntaxCategory } from './syntax'
 
 /**

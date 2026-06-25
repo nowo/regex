@@ -1,8 +1,7 @@
 import type { Diagram, LayoutNode } from '../layout/nodes'
 import type { SyntaxCategory } from '../syntax'
-import { buildDiagram } from '../layout/measure'
+import { analyzeRoot, colorCat } from '../analyze'
 import { GEO } from '../layout/nodes'
-import { parseRegex } from '../parse'
 
 const ESC_RE = /[&<>"]/g
 
@@ -104,12 +103,9 @@ export function renderToSvg(diagram: Diagram, flags = ''): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" class="rr-diagram">${STYLE}${content}</svg>`
 }
 
-/** A source-character range `[s, e)` paired with the node category that colors it. */
-interface Span { s: number, e: number, cat?: SyntaxCategory }
-
 /**
  * Render the full regex literal — `/pattern/flags` — as a token-colored band above
- * the diagram. Each pattern char gets its own `<g>` carrying `data-i` (for
+ * the diagram. Each pattern char gets its own `<tspan>` carrying `data-i` (for
  * diagram→source highlight) and the range of its smallest enclosing node (for
  * source→diagram hover linking); the framing slashes and the flags are plain,
  * non-interactive glyphs. `data-start`/`data-i` stay relative to the pattern, so
@@ -117,9 +113,7 @@ interface Span { s: number, e: number, cat?: SyntaxCategory }
  */
 function renderSourceBand(diagram: Diagram, flags: string): { band: string, bandH: number, bandW: number } {
     const src = diagram.source
-    const ranges: Span[] = []
-    const colors: Span[] = []
-    collectSpans(diagram.root, ranges, colors)
+    const info = analyzeRoot(diagram.root, src.length)
 
     const cols = src.length + 2 + flags.length
     const ty = round(SRC.ch * 0.72)
@@ -132,13 +126,12 @@ function renderSourceBand(diagram: Diagram, flags: string): { band: string, band
     const bgs: string[] = []
     const spans: string[] = ['<tspan>/</tspan>']
     for (let i = 0; i < src.length; i++) {
-        const owner = smallest(ranges, i)
-        const cat = smallest(colors, i)?.cat
-        const range = owner ? { s: owner.s, e: owner.e } : { s: i, e: i + 1 }
+        const { cat, range } = info[i]!
+        const [s, e] = range ?? [i, i + 1]
         const color = cat ? `var(--rr-syntax-${cat},${SYNTAX_HEX[cat]})` : 'var(--rr-hl-line,#10b981)'
         bgs.push(`<rect class="rr-src-bg" data-i="${i}" x="${round(SRC.x + (i + 1) * SRC.cw)}" y="0" width="${round(SRC.cw)}" height="${SRC.ch}" rx="3" style="fill:${color}"/>`)
         const style = cat ? ` style="fill:${color}"` : ''
-        spans.push(`<tspan class="rr-src-char" data-i="${i}" data-start="${range.s}" data-end="${range.e}"${style}>${esc(src[i]!)}</tspan>`)
+        spans.push(`<tspan class="rr-src-char" data-i="${i}" data-start="${s}" data-end="${e}"${style}>${esc(src[i]!)}</tspan>`)
     }
     spans.push('<tspan>/</tspan>')
     for (const f of flags) {
@@ -151,100 +144,6 @@ function renderSourceBand(diagram: Diagram, flags: string): { band: string, band
         bandH: SRC.ch + SRC.gap,
         bandW: round(SRC.x * 2 + cols * SRC.cw),
     }
-}
-
-/**
- * Per-character syntax categories for a regex source — the same coloring the
- * diagram's source band uses (including character-class entries split into
- * charset/literal), exposed so other views can color the same regex identically.
- * Returns null if the pattern (or flags) fail to parse; an entry is null for a
- * character with no specific category (e.g. structural punctuation).
- */
-export function sourceColors(source: string, flags = ''): (SyntaxCategory | null)[] | null {
-    const parsed = parseRegex(source, flags)
-    if (!parsed.ok) {
-        return null
-    }
-    const ranges: Span[] = []
-    const colors: Span[] = []
-    collectSpans(buildDiagram(parsed.ast).root, ranges, colors)
-    return Array.from({ length: source.length }, (_, i) => smallest(colors, i)?.cat ?? null)
-}
-
-/**
- * Per-character owner range — the smallest node `[start, end)` covering each
- * character of the pattern — so a caret position in the input can be mapped to a
- * diagram node. An entry is null where no node covers it; null overall if the
- * pattern (or flags) fail to parse.
- */
-export function sourceRanges(source: string, flags = ''): (readonly [number, number] | null)[] | null {
-    const parsed = parseRegex(source, flags)
-    if (!parsed.ok) {
-        return null
-    }
-    const ranges: Span[] = []
-    const colors: Span[] = []
-    collectSpans(buildDiagram(parsed.ast).root, ranges, colors)
-    return Array.from({ length: source.length }, (_, i) => {
-        const owner = smallest(ranges, i)
-        return owner ? ([owner.s, owner.e] as const) : null
-    })
-}
-
-/** Collect node source-ranges (for hover linking) and colored token spans (for the band). */
-function collectSpans(node: LayoutNode, ranges: Span[], colors: Span[]): void {
-    if (node.start != null && node.end != null) {
-        ranges.push({ s: node.start, e: node.end })
-        // Color by syntax. Because the narrowest covering span wins, an enclosing
-        // node only tints the characters its children don't: a group tints just its
-        // `(`, `)` and `(?<name>` prefix; a quantifier tints its `+ * ? {n}`; an
-        // alternation tints its `|`. Inner literals/classes keep their own color.
-        const cat = colorCat(node)
-        if (cat) {
-            colors.push({ s: node.start, e: node.end, cat })
-        }
-    }
-    for (const it of node.items ?? []) {
-        if (it.start != null && it.end != null) {
-            ranges.push({ s: it.start, e: it.end })
-            // Color class entries by kind, mirroring the diagram's item boxes:
-            // shorthand sets (\d \w \s …) read as charset, everything else as a literal.
-            // The enclosing `[...]` keeps the class color on its brackets (narrowest span wins).
-            colors.push({ s: it.start, e: it.end, cat: it.cls === 'set' ? 'charset' : 'literal' })
-        }
-    }
-    for (const c of node.children) {
-        collectSpans(c.node, ranges, colors)
-    }
-}
-
-/** The syntax-coloring category for a node, or undefined if it should stay neutral. */
-function colorCat(node: LayoutNode): SyntaxCategory | undefined {
-    switch (node.kind) {
-        case 'terminal':
-            return node.cls
-        case 'chars':
-            return 'class'
-        case 'group':
-            return node.groupStyle === 'lookahead' || node.groupStyle === 'lookbehind' ? 'lookaround' : 'group'
-        case 'repeat':
-            return 'quantifier'
-        case 'choice':
-            return 'alternation'
-        default:
-            return undefined
-    }
-}
-
-/** The narrowest span covering index `i`, or undefined if none does. */
-function smallest(spans: Span[], i: number): Span | undefined {
-    let best: Span | undefined
-    for (const sp of spans) {
-        if (sp.s <= i && i < sp.e && (!best || sp.e - sp.s < best.e - best.s)) {
-            best = sp
-        }
-    }
-    return best
 }
 
 function renderNode(node: LayoutNode): string {
