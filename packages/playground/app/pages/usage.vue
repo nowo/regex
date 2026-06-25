@@ -1,13 +1,11 @@
 <script setup lang="ts">
-// A small API doc for the @wzo/regex-diagram package.
+// Documentation page for the @wzo/regex-diagram package.
 const { t } = useI18n()
 const localePath = useLocalePath()
-const toast = useToast()
-const { copy } = useClipboard()
 
 const install = 'pnpm add @wzo/regex-diagram'
 
-// String.raw so the regex escapes (\\d) display exactly as you'd type them in a JS string.
+// String.raw so the regex escapes (\\d) display exactly as you'd type them.
 const quickstart = String.raw`import { regexToSvg, parseRegex, explainRegex } from '@wzo/regex-diagram'
 
 // One-shot: regex → standalone SVG string (null if invalid or broken)
@@ -19,7 +17,60 @@ const { ok, ast, issues } = parseRegex('a$\\d')
 // Plain-language, step-by-step explanation
 const steps = explainRegex('(?<year>\\d{4})')`
 
-// `sig` is plain text (no @, so safe even though it's not i18n); `desc` is localized.
+// Practical examples (paired with localized headings/descriptions).
+const examples = computed(() => [
+    {
+        title: t('usage.exRenderTitle'),
+        desc: t('usage.exRenderDesc'),
+        code: String.raw`import { regexToSvg } from '@wzo/regex-diagram'
+
+// Returns a self-contained SVG string, or null if the regex is invalid/broken.
+const svg = regexToSvg('(?<year>\\d{4})-(?<month>\\d{2})', 'g')
+document.querySelector('#out')!.innerHTML = svg ?? 'invalid regex'`,
+    },
+    {
+        title: t('usage.exValidateTitle'),
+        desc: t('usage.exValidateDesc'),
+        code: String.raw`import { parseRegex } from '@wzo/regex-diagram'
+
+const result = parseRegex('a$\\d') // valid syntax, but never matches
+if (!result.ok || result.issues.length) {
+  for (const issue of result.issues) {
+    console.warn(issue.message, 'at', issue.start)
+  }
+}`,
+    },
+    {
+        title: t('usage.exExplainTitle'),
+        desc: t('usage.exExplainDesc'),
+        code: String.raw`import { explainRegex } from '@wzo/regex-diagram'
+
+for (const step of explainRegex('(?<y>\\d{4})') ?? []) {
+  console.log('  '.repeat(step.depth) + step.token + ' — ' + step.text)
+}`,
+    },
+    {
+        title: t('usage.exLowerTitle'),
+        desc: t('usage.exLowerDesc'),
+        code: String.raw`import { buildDiagram, parseRegex, renderToSvg } from '@wzo/regex-diagram'
+
+const parsed = parseRegex('a|b|c')
+if (parsed.ok) {
+  const diagram = buildDiagram(parsed.ast) // positioned model
+  const svg = renderToSvg(diagram, 'i')    // model → SVG string
+}`,
+    },
+])
+
+const features = computed(() => [
+    t('usage.featureSyntax'),
+    t('usage.featureSvg'),
+    t('usage.featureLint'),
+    t('usage.featureExplain'),
+    t('usage.featureAgnostic'),
+])
+
+// API reference. `sig` is plain text; `desc` is localized.
 const apis = computed(() => [
     { sig: 'regexToSvg(source, flags?) → string | null', desc: t('api.regexToSvg') },
     { sig: 'parseRegex(source, flags?) → { ok, ast, issues }', desc: t('api.parseRegex') },
@@ -31,38 +82,24 @@ const apis = computed(() => [
     { sig: 'sourceRanges(source, flags?) → ([number, number] | null)[] | null', desc: t('api.sourceRanges') },
     { sig: 'toRegexLiteral(source, flags?) → string', desc: t('api.toRegexLiteral') },
 ])
-
-const features = computed(() => [
-    t('usage.featureSyntax'),
-    t('usage.featureSvg'),
-    t('usage.featureLint'),
-    t('usage.featureExplain'),
-    t('usage.featureAgnostic'),
-])
-
-async function copyText(text: string) {
-    await copy(text)
-    toast.add({ title: t('usage.copied'), icon: 'i-lucide-check', color: 'success' })
-}
 </script>
 
 <template>
-    <UContainer class="py-8 space-y-6 max-w-3xl">
+    <UContainer class="py-8 space-y-8 max-w-3xl">
         <UButton :to="localePath('index')" icon="i-lucide-arrow-left" color="neutral" variant="ghost"
             :label="t('nav.home')" class="-ms-2" />
 
-        <div class="space-y-1">
+        <header class="space-y-2">
             <h1 class="text-3xl font-bold text-highlighted">
                 @wzo/regex-diagram
             </h1>
             <p class="text-muted">
                 {{ t('usage.subtitle') }}
             </p>
-        </div>
-
-        <p class="text-sm text-muted leading-relaxed">
-            {{ t('usage.intro') }}
-        </p>
+            <p class="text-sm text-muted leading-relaxed">
+                {{ t('usage.intro') }}
+            </p>
+        </header>
 
         <section class="space-y-2">
             <h2 class="text-sm font-semibold text-highlighted">
@@ -79,23 +116,28 @@ async function copyText(text: string) {
             <h2 class="text-sm font-semibold text-highlighted">
                 {{ t('usage.install') }}
             </h2>
-            <div class="group relative">
-                <pre class="rounded-md bg-muted p-3 font-mono text-sm overflow-x-auto">{{ install }}</pre>
-                <UButton icon="i-lucide-copy" size="xs" color="neutral" variant="ghost"
-                    class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100" :aria-label="t('usage.copy')"
-                    @click="copyText(install)" />
-            </div>
+            <CodeBlock :code="install" lang="bash" />
         </section>
 
         <section class="space-y-2">
             <h2 class="text-sm font-semibold text-highlighted">
                 {{ t('usage.quickstart') }}
             </h2>
-            <div class="group relative">
-                <pre class="rounded-md bg-muted p-3 font-mono text-sm overflow-x-auto">{{ quickstart }}</pre>
-                <UButton icon="i-lucide-copy" size="xs" color="neutral" variant="ghost"
-                    class="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100" :aria-label="t('usage.copy')"
-                    @click="copyText(quickstart)" />
+            <CodeBlock :code="quickstart" />
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-semibold text-highlighted">
+                {{ t('usage.examples') }}
+            </h2>
+            <div v-for="ex in examples" :key="ex.title" class="space-y-1.5">
+                <h3 class="text-sm font-medium text-highlighted">
+                    {{ ex.title }}
+                </h3>
+                <p class="text-sm text-muted">
+                    {{ ex.desc }}
+                </p>
+                <CodeBlock :code="ex.code" />
             </div>
         </section>
 

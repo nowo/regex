@@ -3,7 +3,14 @@ export default defineNuxtConfig({
         '@nuxt/ui',
         '@nuxtjs/i18n',
         '@vueuse/nuxt',
+        'nuxt-shiki',
     ],
+    shiki: {
+        bundledLangs: ['typescript', 'bash'],
+        bundledThemes: ['github-light', 'github-dark'],
+        // Dual theme → CSS-variable output that switches with the `.dark` class.
+        defaultTheme: { light: 'github-light', dark: 'github-dark' },
+    },
     css: ['~/assets/css/main.css'],
     i18n: {
         defaultLocale: 'en',
