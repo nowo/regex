@@ -85,5 +85,18 @@
         "public",
         "dist"
     ],
+    "i18n-ally.localesPaths": [
+        "packages/playground/i18n/locales"
+    ],
+    // Framework auto-detection fails here because vue/nuxt live in a subpackage,
+    // not the workspace root — declare it explicitly so annotations activate.
+    "i18n-ally.enabledFrameworks": [
+        "vue"
+    ],
+    // Our locale files are nested objects ({ ref: { groups: { ... } } }).
+    "i18n-ally.keystyle": "nested",
+    "i18n-ally.sourceLanguage": "en",
+    "i18n-ally.displayLanguage": "zh",
+    "i18n-ally.indent": 4,
     "commentTranslate.targetLanguage": "zh-CN"
 }
