@@ -24,7 +24,45 @@
     },
     "ref": {
         "title": "正则语法参考",
-        "subtitle": "点击任意语法片段即可插入到光标处。"
+        "subtitle": "点击任意语法片段即可插入到光标处。",
+        "groups": {
+            "charClasses": "字符类",
+            "anchors": "锚点",
+            "quantifiers": "量词",
+            "grouping": "分组与引用",
+            "lookaround": "断言",
+            "unicode": "Unicode（需 u/v 标志）"
+        },
+        "items": {
+            "any": "除换行符以外的所有字符",
+            "shorthand": "匹配数字、字符、空格",
+            "negShorthand": "匹配非数字、非字符、非空格",
+            "set": "匹配 a、b 或 c 中的一个字母",
+            "range": "匹配 a 到 z 中的一个字母",
+            "negSet": "匹配除了 a、b 或 c 中的其他字母",
+            "start": "字符串开头",
+            "end": "字符串结尾",
+            "boundary": "单词边界、非单词边界",
+            "opt": "0 次或 1 次匹配",
+            "star": "匹配 0 次或多次",
+            "plus": "匹配 1 次或多次",
+            "exactly": "匹配 n 次",
+            "atLeast": "匹配 n 次以上",
+            "between": "最少 m 次，最多 n 次匹配",
+            "lazy": "懒惰匹配（尽量少）",
+            "capture": "捕获 expr 子模式，以 \\1 使用它",
+            "nonCapture": "忽略捕获的子模式",
+            "named": "命名捕获组",
+            "alt": "匹配 aa 或 bb",
+            "backref": "反向引用第 1 个分组",
+            "namedBackref": "命名反向引用",
+            "lookahead": "正向预查模式 expr",
+            "negLookahead": "负向预查模式 expr",
+            "lookbehind": "正向后行预查模式 expr",
+            "negLookbehind": "负向后行预查模式 expr",
+            "prop": "匹配某 Unicode 属性",
+            "negProp": "不匹配某 Unicode 属性"
+        }
     },
     "explain": {
         "title": "解释",

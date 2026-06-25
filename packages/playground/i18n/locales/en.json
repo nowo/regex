@@ -24,7 +24,45 @@
     },
     "ref": {
         "title": "Syntax reference",
-        "subtitle": "Click any token to insert it at the cursor."
+        "subtitle": "Click any token to insert it at the cursor.",
+        "groups": {
+            "charClasses": "Character classes",
+            "anchors": "Anchors",
+            "quantifiers": "Quantifiers",
+            "grouping": "Groups & references",
+            "lookaround": "Lookaround",
+            "unicode": "Unicode (needs u/v flag)"
+        },
+        "items": {
+            "any": "any char except newline",
+            "shorthand": "digit, word char, whitespace",
+            "negShorthand": "non-digit, non-word, non-whitespace",
+            "set": "one of a, b or c",
+            "range": "one letter from a to z",
+            "negSet": "any char except a, b, c",
+            "start": "start of string",
+            "end": "end of string",
+            "boundary": "word / non-word boundary",
+            "opt": "0 or 1 time",
+            "star": "0 or more times",
+            "plus": "1 or more times",
+            "exactly": "exactly n times",
+            "atLeast": "n or more times",
+            "between": "between m and n times",
+            "lazy": "lazy (as few as possible)",
+            "capture": "capture expr, reuse with \\1",
+            "nonCapture": "non-capturing group",
+            "named": "named capturing group",
+            "alt": "match aa or bb",
+            "backref": "backreference to group 1",
+            "namedBackref": "named backreference",
+            "lookahead": "positive lookahead",
+            "negLookahead": "negative lookahead",
+            "lookbehind": "positive lookbehind",
+            "negLookbehind": "negative lookbehind",
+            "prop": "has unicode property",
+            "negProp": "lacks unicode property"
+        }
     },
     "explain": {
         "title": "Explanation",

@@ -12,6 +12,10 @@ const props = defineProps<{
     flags?: string
     colors?: (SyntaxCategory | null)[]
     fallbackCat?: SyntaxCategory
+    // Skip parsing and color the whole snippet as `fallbackCat`. Use for isolated
+    // example fragments (a bare quantifier like `{n}`, a lone `\1`) that parse to
+    // something misleading on their own.
+    single?: boolean
 }>()
 
 const ESC_RE = /[&<>]/g
@@ -27,7 +31,7 @@ function span(ch: string, cat: SyntaxCategory | null | undefined): string {
 // Built as an HTML string (rendered via v-html) so the per-character spans sit
 // flush against each other — any template whitespace would show as gaps.
 const html = computed(() => {
-    const cats = props.colors ?? sourceColors(props.text, props.flags ?? '')
+    const cats = props.single ? null : (props.colors ?? sourceColors(props.text, props.flags ?? ''))
     if (!cats) {
         return span(props.text, props.fallbackCat ?? null)
     }
