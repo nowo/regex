@@ -113,6 +113,8 @@ function toggleFlag(f: string) {
 
 // --- Export ---
 function currentSvg(): string | null {
+    // regexToSvg returns null for a broken regex (syntax *or* semantic), so a
+    // diagram that never matches can't be exported.
     return regexToSvg(debounced.value.pattern, debounced.value.flags)
 }
 
@@ -242,7 +244,7 @@ function loadExample(ex: { pattern: string, flags: string }) {
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-dimmed font-mono text-lg">/</span>
                     <RegexField ref="patternInput" v-model="pattern" :flags="flags" :highlight="highlight"
-                        @caret="onCaret" :placeholder="t('home.placeholder')" class="flex-1 min-w-[12rem]"
+                        :placeholder="t('home.placeholder')" class="flex-1 min-w-[12rem]" @caret="onCaret"
                         @paste="onPaste" />
                     <span class="text-dimmed font-mono text-lg">/</span>
                     <div ref="flagsWrap" class="relative">

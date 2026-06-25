@@ -9,23 +9,33 @@ const props = defineProps<{
     highlight?: { start: number, end: number } | null
 }>()
 const emit = defineEmits<{ hover: [range: { start: number, end: number, group?: number } | null] }>()
+const { t } = useI18n()
 
-const result = computed(() => {
-    const r = parseRegex(props.pattern, props.flags ?? '')
-    if (!r.ok) {
-        return { ok: false as const, message: r.message, index: r.index, where: r.where }
-    }
-    return { ok: true as const, svg: renderToSvg(buildDiagram(r.ast), props.flags ?? '') }
-})
+// parseRegex now returns syntax + semantic problems together (`issues`); the
+// diagram only renders when there are none.
+const parsed = computed(() => parseRegex(props.pattern, props.flags ?? ''))
+const svg = computed(() =>
+    parsed.value.ok && parsed.value.issues.length === 0
+        ? renderToSvg(buildDiagram(parsed.value.ast), props.flags ?? '')
+        : '',
+)
 
-// The pattern split around the error position, for an inline caret highlight.
-const errorParts = computed(() => {
-    if (result.value.ok || result.value.where !== 'pattern') {
-        return null
-    }
-    const i = result.value.index
+// Errors (syntax or semantic) render the same way: a message plus the pattern
+// with the offending span marked inline.
+interface ErrorItem { message: string, mark: { before: string, at: string, after: string } | null }
+
+const errorItems = computed<ErrorItem[]>(() => {
     const p = props.pattern
-    return { before: p.slice(0, i), at: p.slice(i, i + 1) || ' ', after: p.slice(i + 1) }
+    const mark = (start: number, end: number) => ({ before: p.slice(0, start), at: p.slice(start, end) || ' ', after: p.slice(end) })
+    return parsed.value.issues.map(issue => ({
+        // Localize known lint rules; fall back to the parser's text for syntax errors.
+        message: issue.rule === 'assertionNeverMatches'
+            ? t('lint.assertionNeverMatches')
+            : issue.rule === 'emptyCharClass'
+                ? t('lint.emptyCharClass')
+                : issue.message,
+        mark: issue.start != null && issue.end != null ? mark(issue.start, issue.end) : null,
+    }))
 })
 
 // Highlighting comes from two sources sharing one visual: hovering a diagram node
@@ -110,7 +120,7 @@ watch(() => props.highlight, () => {
 
 // A re-render (pattern/flags change) replaces the SVG and drops highlight classes;
 // reapply the caret highlight against the fresh DOM.
-watch(result, () => {
+watch(parsed, () => {
     if (!hovering) {
         currentKey = ''
         nextTick(() => scrollRef.value && showCaret(scrollRef.value))
@@ -120,14 +130,16 @@ watch(result, () => {
 
 <template>
     <div class="rr-host">
-        <!-- eslint-disable-next-line vue/no-v-html -- trusted SVG produced by our own renderer -->
-        <div v-if="result.ok" ref="scrollRef" class="rr-scroll" @mouseover="onPointer" @mouseleave="onLeave"
-            v-html="result.svg" />
-        <div v-else class="space-y-2">
-            <UAlert color="error" variant="subtle" icon="i-lucide-circle-alert" :title="result.message" />
-            <pre v-if="errorParts"
-                class="rr-err-line"><span>{{ errorParts.before }}</span><mark>{{ errorParts.at }}</mark><span>{{ errorParts.after }}</span></pre>
+        <div v-if="errorItems.length" class="space-y-2">
+            <div v-for="(e, i) in errorItems" :key="i" class="space-y-1">
+                <UAlert color="error" variant="subtle" icon="i-lucide-circle-alert" :title="e.message" />
+                <pre v-if="e.mark"
+                    class="rr-err-line"><span>{{ e.mark.before }}</span><mark>{{ e.mark.at }}</mark><span>{{ e.mark.after }}</span></pre>
+            </div>
         </div>
+        <!-- eslint-disable-next-line vue/no-v-html -- trusted SVG produced by our own renderer -->
+        <div v-else ref="scrollRef" class="rr-scroll" @mouseover="onPointer" @mouseleave="onLeave"
+            v-html="svg" />
     </div>
 </template>
 

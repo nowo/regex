@@ -65,6 +65,10 @@
             "negProp": "不匹配某 Unicode 属性"
         }
     },
+    "lint": {
+        "assertionNeverMatches": "此断言永远无法满足，正则将无法匹配。",
+        "emptyCharClass": "空字符类 [] 不匹配任何字符。"
+    },
     "explain": {
         "title": "解释",
         "invalid": "修正正则后显示解释。"

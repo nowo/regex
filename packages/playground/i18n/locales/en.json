@@ -65,6 +65,10 @@
             "negProp": "lacks unicode property"
         }
     },
+    "lint": {
+        "assertionNeverMatches": "This assertion can never be satisfied — the regex will never match.",
+        "emptyCharClass": "Empty character class [] matches nothing."
+    },
     "explain": {
         "title": "Explanation",
         "invalid": "Fix the regex to see an explanation."
