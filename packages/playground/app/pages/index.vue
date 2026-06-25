@@ -232,7 +232,7 @@ function loadExample(ex: { pattern: string, flags: string }) {
             <div class="space-y-5 min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-dimmed font-mono text-lg">/</span>
-                    <RegexField ref="patternInput" v-model="pattern" :highlight="highlight" @caret="onCaret"
+                    <RegexField ref="patternInput" v-model="pattern" :flags="flags" :highlight="highlight" @caret="onCaret"
                         :placeholder="t('home.placeholder')" class="flex-1 min-w-[12rem]" @paste="onPaste" />
                     <span class="text-dimmed font-mono text-lg">/</span>
                     <UInput v-model="flags" class="w-20 font-mono" size="lg" placeholder="flags" spellcheck="false" />

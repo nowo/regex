@@ -1,10 +1,13 @@
 <script setup lang="ts">
-// A single-line text field that can highlight a sub-range of its value.
-// The visible text is rendered by a backdrop layer (with a <mark>); a transparent
-// input sits on top so editing/caret still work. The two layers share identical
-// font/padding so characters line up, and the backdrop follows the input's scroll.
+// A single-line regex field with in-place syntax highlighting. The visible text
+// is a backdrop layer that colors each character via the shared syntax palette
+// (and tints the highlighted sub-range); a transparent input sits on top so
+// editing/caret still work. Both layers share font/padding so characters line up,
+// and the backdrop follows the input's scroll.
+import { sourceColors } from '@wzo/regex-diagram'
 
 const props = defineProps<{
+    flags?: string
     highlight?: { start: number, end: number } | null
     placeholder?: string
 }>()
@@ -27,15 +30,21 @@ function esc(s: string): string {
     return s.replace(ESC_RE, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'))
 }
 
-// The visible text, with the highlighted range wrapped in <mark>. Rendered via
-// v-html (each piece escaped) so it stays whitespace-exact and formatter-proof.
+// One escaped <span> per character: colored by its syntax category (falls back to
+// plain text while the pattern is mid-edit / invalid), and tinted when it falls in
+// the highlighted range. Rendered via v-html so it stays whitespace-exact.
 const backdropHtml = computed(() => {
     const v = model.value
+    const cats = sourceColors(v, props.flags ?? '')
     const h = props.highlight
-    if (!h || h.start >= h.end) {
-        return esc(v)
+    let out = ''
+    for (let i = 0; i < v.length; i++) {
+        const cat = cats?.[i]
+        const style = cat ? ` style="color:var(--rr-syntax-${cat})"` : ''
+        const hl = h && i >= h.start && i < h.end ? ' class="rf-hl"' : ''
+        out += `<span${hl}${style}>${esc(v.charAt(i))}</span>`
     }
-    return `${esc(v.slice(0, h.start))}<mark>${esc(v.slice(h.start, h.end))}</mark>${esc(v.slice(h.end))}`
+    return out
 })
 
 function syncScroll() {
@@ -93,9 +102,8 @@ watch(model, () => nextTick(syncScroll))
     overflow: hidden;
 }
 
-.rf-backdrop mark {
-    background: var(--rr-source-hl, #fde047);
-    color: #1f2937;
+.rf-backdrop .rf-hl {
+    background: color-mix(in oklch, var(--rr-source-hl, #fde047) 45%, transparent);
     border-radius: 2px;
 }
 
