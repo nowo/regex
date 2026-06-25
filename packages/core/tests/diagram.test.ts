@@ -6,7 +6,7 @@ import { parseRegex } from '../src/parse'
 function diagram(source: string, flags = '') {
     const r = parseRegex(source, flags)
     if (!r.ok) {
-        throw new Error(`parse failed: ${r.message}`)
+        throw new Error(`parse failed: ${r.issues[0]?.message}`)
     }
     return buildDiagram(r.ast)
 }

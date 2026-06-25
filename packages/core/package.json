@@ -56,7 +56,8 @@
         "release": "changelogen --release --push"
     },
     "dependencies": {
-        "@eslint-community/regexpp": "^4.12.1"
+        "@eslint-community/regexpp": "^4.12.1",
+        "regexp-ast-analysis": "^0.7.1"
     },
     "devDependencies": {
         "changelogen": "^0.6.2",

@@ -7,7 +7,7 @@ import { parseRegex } from '../src/parse'
 function parseOk(source: string, flags = ''): AST.Pattern {
     const r = parseRegex(source, flags)
     if (!r.ok) {
-        throw new Error(`expected ok parse for /${source}/${flags}, got error: ${r.message}`)
+        throw new Error(`expected ok parse for /${source}/${flags}, got error: ${r.issues[0]?.message}`)
     }
     return (r as ParseSuccess).ast
 }
@@ -114,54 +114,42 @@ describe('parseRegex — node coverage', () => {
 })
 
 describe('parseRegex — error handling', () => {
-    it('unbalanced group → pattern error with index', () => {
+    // Pattern errors carry an offset (`start`) to mark inline; flag errors don't.
+    it('unbalanced group → pattern error with offset', () => {
         const r = parseRegex('(a')
         expect(r.ok).toBe(false)
-        if (!r.ok) {
-            expect(r.where).toBe('pattern')
-            expect(r.message).toBeTruthy()
-            expect(typeof r.index).toBe('number')
-        }
+        expect(r.issues[0]?.message).toBeTruthy()
+        expect(typeof r.issues[0]?.start).toBe('number')
     })
 
     it('unterminated character class → pattern error', () => {
         const r = parseRegex('[a-z')
         expect(r.ok).toBe(false)
-        if (!r.ok) {
-            expect(r.where).toBe('pattern')
-        }
+        expect(typeof r.issues[0]?.start).toBe('number')
     })
 
     it('nothing to repeat → pattern error', () => {
         const r = parseRegex('*abc')
         expect(r.ok).toBe(false)
-        if (!r.ok) {
-            expect(r.where).toBe('pattern')
-        }
+        expect(typeof r.issues[0]?.start).toBe('number')
     })
 
-    it('duplicate flag → flags error', () => {
+    it('duplicate flag → flags error (no pattern offset)', () => {
         const r = parseRegex('a', 'gg')
         expect(r.ok).toBe(false)
-        if (!r.ok) {
-            expect(r.where).toBe('flags')
-        }
+        expect(r.issues[0]?.start).toBeUndefined()
     })
 
     it('unknown flag → flags error', () => {
         const r = parseRegex('a', 'x')
         expect(r.ok).toBe(false)
-        if (!r.ok) {
-            expect(r.where).toBe('flags')
-        }
+        expect(r.issues[0]?.start).toBeUndefined()
     })
 
     it('illegal u+v combination → flags error', () => {
         const r = parseRegex('a', 'uv')
         expect(r.ok).toBe(false)
-        if (!r.ok) {
-            expect(r.where).toBe('flags')
-        }
+        expect(r.issues[0]?.start).toBeUndefined()
     })
 
     it('empty pattern is valid', () => {

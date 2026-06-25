@@ -12,20 +12,20 @@ export type { ExplainItem } from './explain'
 export { buildDiagram } from './layout/measure'
 export type { Diagram, GroupStyle, LayoutNode, RailNode, TerminalClass } from './layout/nodes'
 export { toRegexLiteral } from './literal'
-export { parseRegex } from './parse'
-export type { ParseFailure, ParseResult, ParseSuccess } from './parse'
+export { lintRegex, parseRegex } from './parse'
+export type { ParseFailure, ParseResult, ParseSuccess, RegexIssue } from './parse'
 export { renderToSvg, sourceColors, sourceRanges } from './render/svg'
 export { SYNTAX_CATEGORIES } from './syntax'
 export type { SyntaxCategory } from './syntax'
 
 /**
  * One-shot: regex source + flags → SVG string.
- * Returns `null` if the pattern (or flags) fail to parse — use {@link parseRegex}
- * directly when you need the error message and position.
+ * Returns `null` if the regex fails to parse OR has semantic issues (a broken
+ * regex shouldn't yield a diagram) — use {@link parseRegex} for the details.
  */
 export function regexToSvg(source: string, flags = ''): string | null {
     const parsed = parseRegex(source, flags)
-    if (!parsed.ok) {
+    if (!parsed.ok || parsed.issues.length > 0) {
         return null
     }
     return renderToSvg(buildDiagram(parsed.ast), flags)
