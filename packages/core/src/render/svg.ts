@@ -94,10 +94,13 @@ export function renderToSvg(diagram: Diagram, flags = ''): string {
     body.push(`<g transform="translate(${diagram.rootX},${diagram.rootY})">${renderNode(diagram.root)}</g>`)
 
     const { band, bandH, bandW } = renderSourceBand(diagram, flags)
-    const content = `${band}<g transform="translate(0,${round(bandH)})">${body.join('')}</g>`
+    // Breathing room above the band so the regex isn't flush to the top edge
+    // (most visible in an exported SVG, which has no surrounding card padding).
+    const top = SRC.gap
+    const content = `<g transform="translate(0,${top})">${band}<g transform="translate(0,${round(bandH)})">${body.join('')}</g></g>`
 
     const w = round(Math.max(diagram.width, bandW))
-    const h = round(diagram.height + bandH)
+    const h = round(diagram.height + bandH + top)
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" class="rr-diagram">${STYLE}${content}</svg>`
 }
 
