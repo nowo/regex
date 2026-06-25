@@ -212,15 +212,15 @@ function insertToken(token: string) {
     })
 }
 
-// --- Examples ---
-const examples = [
-    { label: 'Date', pattern: '(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})', flags: '' },
-    { label: 'Phone', pattern: '^\\(?(\\d{3})\\)?[-.\\s]?(\\d{3})[-.\\s]?(\\d{4})$', flags: '' },
-    { label: 'Email', pattern: '[\\w.+-]+@[\\w-]+\\.[\\w.-]+', flags: '' },
-    { label: 'URL', pattern: '(?:https?|ftp)://[^\\s/$.?#].\\S*', flags: 'i' },
-    { label: 'Hex color', pattern: '#[0-9a-f]{6}\\b', flags: 'i' },
-    { label: 'Alternation', pattern: 'GET|POST|PUT', flags: '' },
-]
+// --- Examples --- (computed so labels follow the locale; literal t() keys for i18n-ally)
+const examples = computed(() => [
+    { label: t('examples.date'), pattern: '(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})', flags: '' },
+    { label: t('examples.phone'), pattern: '^\\(?(\\d{3})\\)?[-.\\s]?(\\d{3})[-.\\s]?(\\d{4})$', flags: '' },
+    { label: t('examples.email'), pattern: '[\\w.+-]+@[\\w-]+\\.[\\w.-]+', flags: '' },
+    { label: t('examples.url'), pattern: '(?:https?|ftp)://[^\\s/$.?#].\\S*', flags: 'i' },
+    { label: t('examples.hexColor'), pattern: '#[0-9a-f]{6}\\b', flags: 'i' },
+    { label: t('examples.alternation'), pattern: 'GET|POST|PUT', flags: '' },
+])
 
 function loadExample(ex: { pattern: string, flags: string }) {
     pattern.value = ex.pattern
@@ -292,7 +292,7 @@ function loadExample(ex: { pattern: string, flags: string }) {
                         {{ t('home.examples') }}
                     </p>
                     <div class="flex flex-wrap gap-2">
-                        <UButton v-for="ex in examples" :key="ex.label" variant="soft" color="neutral" size="sm"
+                        <UButton v-for="ex in examples" :key="ex.pattern" variant="soft" color="neutral" size="sm"
                             @click="loadExample(ex)">
                             {{ ex.label }}
                         </UButton>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { locale, setLocale } = useI18n()
+const localePath = useLocalePath()
 
 function toggleLocale() {
     setLocale(locale.value === 'en' ? 'zh' : 'en')
@@ -9,13 +10,16 @@ function toggleLocale() {
 <template>
     <UHeader>
         <template #title>
-            <span class="flex items-center gap-2">
+            <NuxtLink :to="localePath('index')" class="flex items-center gap-2">
                 <UIcon name="i-lucide-route" class="size-6 text-primary" />
                 <span class="font-bold text-highlighted">regex</span>
-            </span>
+            </NuxtLink>
         </template>
 
         <template #right>
+            <UButton :to="localePath('usage')" icon="i-lucide-book-open" color="neutral" variant="ghost">
+                <span class="font-mono text-xs">@wzo/regex-diagram</span>
+            </UButton>
             <UButton :label="locale === 'en' ? '中文' : 'EN'" icon="i-lucide-languages" color="neutral" variant="ghost"
                 @click="toggleLocale" />
             <UColorModeButton />

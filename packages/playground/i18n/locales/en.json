@@ -5,6 +5,28 @@
         "placeholder": "Enter a regular expression",
         "examples": "Examples"
     },
+    "nav": {
+        "home": "Home"
+    },
+    "api": {
+        "regexToSvg": "One-shot: regex → standalone SVG string; null if invalid or semantically broken.",
+        "parseRegex": "Parse to an AST and validate; the result has ok, ast and issues (syntax + semantic).",
+        "lintRegex": "Just the semantic issues (never-matching assertions, empty classes, …).",
+        "explainRegex": "Token-by-token, plain-language explanation.",
+        "buildDiagram": "Lay out a regex AST into a railroad-diagram model.",
+        "renderToSvg": "Render a diagram model to an SVG string.",
+        "sourceColors": "Per-character syntax category (for source highlighting).",
+        "sourceRanges": "Per-character smallest covering node range.",
+        "toRegexLiteral": "Build a /…/flags literal from source + flags."
+    },
+    "examples": {
+        "date": "Date",
+        "phone": "Phone",
+        "email": "Email",
+        "url": "URL",
+        "hexColor": "Hex color",
+        "alternation": "Alternation"
+    },
     "flags": {
         "label": "Regex flags",
         "g": "global",
@@ -77,6 +99,21 @@
         "title": "JS code",
         "copy": "Copy",
         "copied": "Code copied to clipboard"
+    },
+    "usage": {
+        "subtitle": "The diagram engine is a standalone npm package.",
+        "intro": "It parses a regex into an AST, lays it out as a railroad diagram, and renders a self-contained, themeable SVG — plus syntax/semantic validation and a token-by-token plain-language explanation. Framework-agnostic, usable in any JS/TS project.",
+        "features": "Features",
+        "featureSyntax": "Modern syntax: named groups, lookbehind, Unicode properties, v-flag set operations",
+        "featureSvg": "Self-contained SVG, themeable via CSS variables (incl. dark mode), exportable",
+        "featureLint": "Parsing validates too: syntax errors and semantic issues (never-matching assertions, empty classes)",
+        "featureExplain": "Token-by-token, plain-language explanation",
+        "featureAgnostic": "Framework-agnostic pure functions, zero runtime dependencies",
+        "install": "Install",
+        "quickstart": "Quick start",
+        "api": "API reference",
+        "copy": "Copy",
+        "copied": "Copied to clipboard"
     },
     "test": {
         "title": "Test strings",

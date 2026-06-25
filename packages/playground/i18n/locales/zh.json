@@ -1,9 +1,31 @@
 {
     "home": {
-        "title": "正则表达式可视化图",
-        "description": "把正则表达式可视化为铁路图 —— 支持现代语法，实时预览。",
+        "title": "正则表达式可视化",
+        "description": "把正则表达式转成可视化图 —— 支持现代语法，实时预览。",
         "placeholder": "输入一个正则表达式",
         "examples": "示例"
+    },
+    "nav": {
+        "home": "首页"
+    },
+    "api": {
+        "regexToSvg": "一步把正则转成独立的 SVG 字符串；不合法或语义有问题时返回 null。",
+        "parseRegex": "解析为 AST 并校验，结果含 ok、ast、issues（语法 + 语义问题）。",
+        "lintRegex": "只返回语义问题（永不匹配的断言、空字符类等）。",
+        "explainRegex": "逐 token 的自然语言解释。",
+        "buildDiagram": "把正则 AST 布局成铁路图模型。",
+        "renderToSvg": "把图模型渲染成 SVG 字符串。",
+        "sourceColors": "每个字符的语法配色类别（用于源码高亮）。",
+        "sourceRanges": "每个字符对应的最小覆盖节点范围。",
+        "toRegexLiteral": "把 source + flags 拼成 /…/flags 字面量。"
+    },
+    "examples": {
+        "date": "日期",
+        "phone": "电话",
+        "email": "邮箱",
+        "url": "网址",
+        "hexColor": "十六进制颜色",
+        "alternation": "选择"
     },
     "flags": {
         "label": "正则标志",
@@ -77,6 +99,21 @@
         "title": "JS 代码",
         "copy": "复制",
         "copied": "代码已复制到剪贴板"
+    },
+    "usage": {
+        "subtitle": "这套铁路图引擎是一个独立的 npm 包。",
+        "intro": "它把正则解析成 AST、布局成铁路图，再渲染为自包含、可主题化的 SVG；同时提供语法/语义校验和逐 token 的自然语言解释。框架无关，可用于任意 JS/TS 项目。",
+        "features": "特性",
+        "featureSyntax": "支持现代语法：命名组、前后行断言、Unicode 属性、v 标志集合运算",
+        "featureSvg": "输出自包含 SVG，用 CSS 变量即可主题化（含暗色），可直接导出",
+        "featureLint": "解析即校验：语法错误与语义问题（永不匹配的断言、空字符类）",
+        "featureExplain": "逐 token 的自然语言解释",
+        "featureAgnostic": "框架无关的纯函数 API，零运行时依赖",
+        "install": "安装",
+        "quickstart": "快速开始",
+        "api": "API 参考",
+        "copy": "复制",
+        "copied": "已复制到剪贴板"
     },
     "test": {
         "title": "测试字符串",
