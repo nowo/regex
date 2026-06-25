@@ -8,12 +8,19 @@ const props = defineProps<{
     highlight?: { start: number, end: number } | null
     placeholder?: string
 }>()
+// Reports the caret's character offset (null when the field loses focus) so the
+// parent can light up the diagram node under the cursor.
+const emit = defineEmits<{ caret: [pos: number | null] }>()
 
 const model = defineModel<string>({ default: '' })
 
 const inputRef = ref<HTMLInputElement>()
 const backdropRef = ref<HTMLDivElement>()
 defineExpose({ inputRef })
+
+function reportCaret() {
+    emit('caret', inputRef.value?.selectionStart ?? null)
+}
 
 const ESC_RE = /[&<>]/g
 function esc(s: string): string {
@@ -45,7 +52,9 @@ watch(model, () => nextTick(syncScroll))
         <!-- eslint-disable-next-line vue/no-v-html -- each piece is escaped above -->
         <div ref="backdropRef" class="rf-layer rf-backdrop" aria-hidden="true" v-html="backdropHtml" />
         <input ref="inputRef" v-model="model" type="text" class="rf-layer rf-input" :placeholder="placeholder"
-            spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" @scroll="syncScroll">
+            spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" @scroll="syncScroll"
+            @click="reportCaret" @keyup="reportCaret" @select="reportCaret" @focus="reportCaret"
+            @blur="emit('caret', null)">
     </div>
 </template>
 

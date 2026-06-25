@@ -171,6 +171,26 @@ export function sourceColors(source: string, flags = ''): (SyntaxCategory | null
     return Array.from({ length: source.length }, (_, i) => smallest(colors, i)?.cat ?? null)
 }
 
+/**
+ * Per-character owner range — the smallest node `[start, end)` covering each
+ * character of the pattern — so a caret position in the input can be mapped to a
+ * diagram node. An entry is null where no node covers it; null overall if the
+ * pattern (or flags) fail to parse.
+ */
+export function sourceRanges(source: string, flags = ''): (readonly [number, number] | null)[] | null {
+    const parsed = parseRegex(source, flags)
+    if (!parsed.ok) {
+        return null
+    }
+    const ranges: Span[] = []
+    const colors: Span[] = []
+    collectSpans(buildDiagram(parsed.ast).root, ranges, colors)
+    return Array.from({ length: source.length }, (_, i) => {
+        const owner = smallest(ranges, i)
+        return owner ? ([owner.s, owner.e] as const) : null
+    })
+}
+
 /** Collect node source-ranges (for hover linking) and colored token spans (for the band). */
 function collectSpans(node: LayoutNode, ranges: Span[], colors: Span[]): void {
     if (node.start != null && node.end != null) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { regexToSvg, toRegexLiteral } from '@wzo/regex-diagram'
+import { regexToSvg, sourceRanges, toRegexLiteral } from '@wzo/regex-diagram'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -166,6 +166,22 @@ function onHover(range: { start: number, end: number, group?: number } | null) {
     activeGroup.value = range?.group ?? null
 }
 
+// --- Input caret → highlight the matching node + source band in the diagram ---
+const caretRange = ref<{ start: number, end: number } | null>(null)
+
+function onCaret(pos: number | null) {
+    if (pos == null) {
+        caretRange.value = null
+        return
+    }
+    const ranges = sourceRanges(debounced.value.pattern, debounced.value.flags)
+    // Caret at offset `pos` sits before character `pos`; map it to that character
+    // (or the last one when parked at the very end).
+    const i = Math.min(pos, (ranges?.length ?? 0) - 1)
+    const owner = i >= 0 ? ranges?.[i] : null
+    caretRange.value = owner ? { start: owner[0], end: owner[1] } : null
+}
+
 // --- Syntax reference: insert a token at the caret ---
 const patternInput = useTemplateRef<{ inputRef?: HTMLInputElement }>('patternInput')
 
@@ -216,7 +232,7 @@ function loadExample(ex: { pattern: string, flags: string }) {
             <div class="space-y-5 min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-dimmed font-mono text-lg">/</span>
-                    <RegexField ref="patternInput" v-model="pattern" :highlight="highlight"
+                    <RegexField ref="patternInput" v-model="pattern" :highlight="highlight" @caret="onCaret"
                         :placeholder="t('home.placeholder')" class="flex-1 min-w-[12rem]" @paste="onPaste" />
                     <span class="text-dimmed font-mono text-lg">/</span>
                     <UInput v-model="flags" class="w-20 font-mono" size="lg" placeholder="flags" spellcheck="false" />
@@ -241,7 +257,8 @@ function loadExample(ex: { pattern: string, flags: string }) {
                 </div>
 
                 <UCard>
-                    <RailroadDiagram :pattern="debounced.pattern" :flags="debounced.flags" @hover="onHover" />
+                    <RailroadDiagram :pattern="debounced.pattern" :flags="debounced.flags" :highlight="caretRange"
+                        @hover="onHover" />
                 </UCard>
 
                 <ExplanationPanel :pattern="debounced.pattern" :flags="debounced.flags" />
