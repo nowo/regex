@@ -9,7 +9,8 @@
         "home": "首页"
     },
     "docs": {
-        "onThisPage": "本页目录"
+        "onThisPage": "本页目录",
+        "search": "搜索文档"
     },
     "examples": {
         "date": "日期",

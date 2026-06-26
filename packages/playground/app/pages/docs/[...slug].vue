@@ -41,12 +41,36 @@ const toc = computed(() => page.value?.body?.toc?.links ?? [])
 const surroundLinks = computed(() =>
     (surround.value ?? []).map(item => (item ? { ...item, path: localePath(`/docs${item.path}`) } : item)),
 )
+
+// Full-text search index for the current locale's collection.
+const { data: files } = await useAsyncData(
+    () => `docs-search-${collection.value}`,
+    () => queryCollectionSearchSections(collection.value),
+    { watch: [collection] },
+)
+
+// Search-result links carry content paths (/examples#x); rewrite to the real
+// route (/docs/examples#x, /zh/docs/...) like the nav and prev/next links.
+const searchFiles = computed(() =>
+    (files.value ?? []).map((f) => {
+        const [p, hash] = f.id.split('#')
+        return { ...f, id: localePath(`/docs${p}`) + (hash ? `#${hash}` : '') }
+    }),
+)
+
+// Navigation for the search panel, with the same path rewrite so it lines up
+// with searchFiles.
+const searchNav = computed(() =>
+    links.value.map(n => ({ ...n, path: localePath(`/docs${n.path}`) })),
+)
 </script>
 
 <template>
     <UContainer class="py-8">
+        <UContentSearch :files="searchFiles" :navigation="searchNav" />
         <div class="grid gap-8 lg:grid-cols-[180px_minmax(0,1fr)_180px]">
             <aside class="hidden lg:block lg:sticky lg:top-20 lg:self-start">
+                <UContentSearchButton :label="t('docs.search')" :collapsed="false" class="mb-3 w-full" />
                 <nav class="flex flex-col gap-0.5 text-sm">
                     <ULink v-for="item in links" :key="item.path" :to="localePath(`/docs${item.path}`)"
                         class="rounded-md px-2.5 py-1.5"

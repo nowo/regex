@@ -9,7 +9,8 @@
         "home": "Home"
     },
     "docs": {
-        "onThisPage": "On this page"
+        "onThisPage": "On this page",
+        "search": "Search docs"
     },
     "examples": {
         "date": "Date",
