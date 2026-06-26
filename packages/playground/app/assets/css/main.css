@@ -63,3 +63,24 @@ button:not(:disabled),
     /* Hover glow spread (outer drop-shadow radius). Larger = wider halo. */
     --rr-syntax-glow: 8px;
 }
+
+/*
+ * Twoslash hover popups (nuxt-content-twoslash). The bundled vitepress-twoslash
+ * styles set --twoslash-* to VitePress variables (e.g. --vp-c-bg, undefined
+ * here → resolves to empty), in a :root that loads AFTER ours and wins at equal
+ * specificity, so the popup rendered transparent. Use `html:root` to outrank it
+ * regardless of load order, and map onto Nuxt UI's light/dark tokens.
+ */
+html:root {
+    --twoslash-popup-bg: var(--ui-bg-elevated);
+    --twoslash-popup-color: var(--ui-text);
+    --twoslash-border-color: var(--ui-border-accented);
+    --twoslash-docs-color: var(--ui-text-muted);
+}
+
+html .v-popper--theme-twoslash .v-popper__inner {
+    background: var(--ui-bg-elevated);
+    color: var(--ui-text);
+    border: 1px solid var(--ui-border-accented);
+    box-shadow: 0 6px 24px rgb(0 0 0 / 0.12);
+}
