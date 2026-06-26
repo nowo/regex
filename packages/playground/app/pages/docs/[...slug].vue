@@ -22,12 +22,25 @@ const { data: nav } = await useAsyncData(
     { watch: [collection] },
 )
 
+// Previous / next page within the same locale's collection.
+const { data: surround } = await useAsyncData(
+    () => `docs-surround-${collection.value}-${path.value}`,
+    () => queryCollectionItemSurroundings(collection.value, path.value, { fields: ['title', 'description'] }),
+    { watch: [collection, path] },
+)
+
 // Flatten any one-level nesting into a single ordered list of pages.
 const links = computed(() =>
     (nav.value ?? []).flatMap(n => ('children' in n && n.children?.length ? n.children : [n])),
 )
 
 const toc = computed(() => page.value?.body?.toc?.links ?? [])
+
+// Rewrite each surround link's content path (/examples) to the real route
+// (/docs/examples, /zh/docs/examples), preserving empty ends.
+const surroundLinks = computed(() =>
+    (surround.value ?? []).map(item => (item ? { ...item, path: localePath(`/docs${item.path}`) } : item)),
+)
 </script>
 
 <template>
@@ -49,6 +62,7 @@ const toc = computed(() => page.value?.body?.toc?.links ?? [])
                 <p v-else class="text-dimmed">
                     Not found.
                 </p>
+                <UContentSurround v-if="page" :surround="surroundLinks" class="mt-12" />
             </article>
 
             <UContentToc v-if="toc.length" :links="toc" :title="t('docs.onThisPage')" highlight
