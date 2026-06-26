@@ -9,7 +9,7 @@ Parse a regular expression with a modern parser, lay it out as a railroad
 diagram, and render it to SVG — including modern syntax such as named groups,
 lookbehind, `\p{}`, named backreferences and the `v` flag.
 
-**▶ Interactive playground & full API docs: <https://nowo.github.io/regex/usage>**
+**▶ Interactive playground & full API docs: <https://nowo.github.io/regex/docs/getting-started>**
 
 ## Install
 

@@ -8,7 +8,7 @@
 用现代解析器解析正则、布局成铁路图、渲染为 SVG —— 支持命名组、后行断言、`\p{}`、
 具名反向引用、`v` flag 等现代语法。
 
-**▶ 在线 playground 与完整 API 文档：<https://nowo.github.io/regex/usage>**
+**▶ 在线 playground 与完整 API 文档：<https://nowo.github.io/regex/docs/getting-started>**
 
 ## 安装
 
