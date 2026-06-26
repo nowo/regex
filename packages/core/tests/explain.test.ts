@@ -26,6 +26,12 @@ describe('explainRegex', () => {
         expect(items.find(i => i.token === '\\1')!.text).toContain('back-reference to group #1')
     })
 
+    it('strips the article from a shorthand set inside a class', () => {
+        const items = explainRegex('[\\d\\s]')!
+        const cls = items.find(i => i.token === '[\\d\\s]')!
+        expect(cls.text).toBe('one of: digit (0-9), whitespace character')
+    })
+
     it('lists alternatives as options', () => {
         const items = explainRegex('a|b|c')!
         expect(items.filter(i => i.text.startsWith('option'))).toHaveLength(3)

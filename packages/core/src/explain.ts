@@ -317,6 +317,10 @@ function classMemberDesc(e: AST.CharacterClass['elements'][number]): ClassMember
 
 const PLACEHOLDER = /\{(\w+)\}/g
 
+// Inside a class, members read as bare noun phrases, so strip the English
+// article the top-level template carries (a no-op for languages without one).
+const LEADING_ARTICLE = /^an? /
+
 function interpolate(tpl: string, vars: Record<string, string | number>): string {
     return tpl.replace(PLACEHOLDER, (_, k) => String(vars[k] ?? ''))
 }
@@ -392,7 +396,7 @@ function memberText(member: ClassMember, m: ExplainMessages): string {
         case 'range':
             return `${member.min}-${member.max}`
         case 'set':
-            return charSetText(member.set, m)
+            return charSetText(member.set, m).replace(LEADING_ARTICLE, '')
     }
 }
 
