@@ -96,9 +96,7 @@
         "invalid": "修正正则后显示解释。"
     },
     "code": {
-        "title": "JS 代码",
-        "copy": "复制",
-        "copied": "代码已复制到剪贴板"
+        "title": "JS 代码"
     },
     "usage": {
         "subtitle": "这套铁路图引擎是一个独立的 npm 包。",

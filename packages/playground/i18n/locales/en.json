@@ -96,9 +96,7 @@
         "invalid": "Fix the regex to see an explanation."
     },
     "code": {
-        "title": "JS code",
-        "copy": "Copy",
-        "copied": "Code copied to clipboard"
+        "title": "JS code"
     },
     "usage": {
         "subtitle": "The diagram engine is a standalone npm package.",
