@@ -82,6 +82,75 @@ const apis = computed(() => [
     { sig: 'sourceRanges(source, flags?) → ([number, number] | null)[] | null', desc: t('api.sourceRanges') },
     { sig: 'toRegexLiteral(source, flags?) → string', desc: t('api.toRegexLiteral') },
 ])
+
+// The types returned/accepted by the API above.
+const types = String.raw`// Returned in parseRegex().issues and by lintRegex()
+interface RegexIssue {
+  rule?: 'assertionNeverMatches' | 'emptyCharClass' // stable id; absent for syntax errors
+  message: string  // human-readable (the parser's text for syntax errors)
+  start?: number   // pattern offsets of the offending token, when known
+  end?: number
+}
+
+// One line of explainRegex()
+interface ExplainItem {
+  depth: number       // nesting level, for indentation
+  cat: SyntaxCategory // the token's syntax category (drives the shared color)
+  token: string       // the source slice this line describes
+  text: string        // plain-language description
+  start?: number
+  end?: number
+}
+
+// Color-category keys — also the --rr-syntax-* variable suffixes
+type SyntaxCategory =
+  | 'literal' | 'charset' | 'class' | 'anchor' | 'quantifier'
+  | 'group' | 'lookaround' | 'backref' | 'alternation'`
+
+// The shared syntax palette: one color per category, with its light-mode default
+// and the regex tokens it colors. Swatches use the live CSS var, so they track
+// the current color mode. `tok` is plain regex syntax — kept out of i18n.
+const palette = computed(() => [
+    { cat: 'literal', hex: '#3b82f6', tok: 'a b 1', desc: t('usage.palette.literal') },
+    { cat: 'charset', hex: '#16a34a', tok: '\\d \\w \\s .', desc: t('usage.palette.charset') },
+    { cat: 'class', hex: '#d97706', tok: '[a-z] [^0-9]', desc: t('usage.palette.class') },
+    { cat: 'anchor', hex: '#8b5cf6', tok: '^ $ \\b', desc: t('usage.palette.anchor') },
+    { cat: 'quantifier', hex: '#c026d3', tok: '* + ? {n,m}', desc: t('usage.palette.quantifier') },
+    { cat: 'group', hex: '#e11d48', tok: '( ) (?: (?<n>', desc: t('usage.palette.group') },
+    { cat: 'lookaround', hex: '#ea580c', tok: '(?= (?! (?<=', desc: t('usage.palette.lookaround') },
+    { cat: 'backref', hex: '#0d9488', tok: '\\1 \\k<n>', desc: t('usage.palette.backref') },
+    { cat: 'alternation', hex: '#64748b', tok: 'a|b|c', desc: t('usage.palette.alternation') },
+])
+
+// Recolor by overriding the --rr-syntax-* variables on any wrapper element.
+const cssPalette = String.raw`/* The SVG ships with these light-mode defaults baked in; override only
+   the variables you want to change, on any element wrapping the SVG. */
+.regex-diagram {
+  --rr-syntax-literal: #3b82f6;     /* a b 1            */
+  --rr-syntax-charset: #16a34a;     /* \d \w \s .       */
+  --rr-syntax-class: #d97706;       /* [a-z] [^0-9]     */
+  --rr-syntax-anchor: #8b5cf6;      /* ^ $ \b           */
+  --rr-syntax-quantifier: #c026d3;  /* * + ? {n,m}      */
+  --rr-syntax-group: #e11d48;       /* ( ) (?<name>     */
+  --rr-syntax-lookaround: #ea580c;  /* (?= (?! (?<=     */
+  --rr-syntax-backref: #0d9488;     /* \1 \k<name>      */
+  --rr-syntax-alternation: #64748b; /* a|b|c            */
+}`
+
+// Structural vars (rail / text / labels) plus the hover knobs — mostly what a
+// dark theme needs, since the colored boxes already read on a dark card.
+const cssStructure = String.raw`.dark .regex-diagram {
+  --rr-rail: #64748b;   /* connecting rail            */
+  --rr-text: #e2e8f0;   /* source band + box text     */
+  --rr-muted: #94a3b8;  /* group / class labels       */
+  --rr-group: #64748b;  /* neutral group outline      */
+}
+
+/* Source-band hover highlight: tint strength and glow spread. */
+.regex-diagram {
+  --rr-syntax-hl-opacity: 0.18;
+  --rr-syntax-glow: 8px;
+}`
 </script>
 
 <template>
@@ -153,6 +222,54 @@ const apis = computed(() => [
                     </p>
                 </li>
             </ul>
+        </section>
+
+        <section class="space-y-2">
+            <h2 class="text-sm font-semibold text-highlighted">
+                {{ t('usage.types') }}
+            </h2>
+            <p class="text-sm text-muted">
+                {{ t('usage.typesIntro') }}
+            </p>
+            <CodeBlock :code="types" />
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-semibold text-highlighted">
+                {{ t('usage.theme') }}
+            </h2>
+            <p class="text-sm text-muted leading-relaxed">
+                {{ t('usage.themeIntro') }}
+            </p>
+
+            <div class="space-y-2">
+                <h3 class="text-sm font-medium text-highlighted">
+                    {{ t('usage.themePalette') }}
+                </h3>
+                <p class="text-sm text-muted">
+                    {{ t('usage.themePaletteIntro') }}
+                </p>
+                <ul class="divide-y divide-default rounded-md border border-default">
+                    <li v-for="p in palette" :key="p.cat" class="flex items-center gap-3 p-2.5">
+                        <span class="size-4 shrink-0 rounded" :style="{ background: `var(--rr-syntax-${p.cat})` }" />
+                        <code class="font-mono text-xs text-highlighted w-24 shrink-0">{{ p.cat }}</code>
+                        <code class="font-mono text-xs text-dimmed w-20 shrink-0">{{ p.hex }}</code>
+                        <code class="font-mono text-xs text-primary hidden shrink-0 w-28 sm:block">{{ p.tok }}</code>
+                        <span class="text-sm text-muted">{{ p.desc }}</span>
+                    </li>
+                </ul>
+                <CodeBlock :code="cssPalette" lang="css" />
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="text-sm font-medium text-highlighted">
+                    {{ t('usage.themeStructure') }}
+                </h3>
+                <p class="text-sm text-muted">
+                    {{ t('usage.themeStructureIntro') }}
+                </p>
+                <CodeBlock :code="cssStructure" lang="css" />
+            </div>
         </section>
     </UContainer>
 </template>

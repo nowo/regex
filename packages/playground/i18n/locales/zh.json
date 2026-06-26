@@ -9,15 +9,15 @@
         "home": "首页"
     },
     "api": {
-        "regexToSvg": "一步把正则转成独立的 SVG 字符串；不合法或语义有问题时返回 null。",
-        "parseRegex": "解析为 AST 并校验，结果含 ok、ast、issues（语法 + 语义问题）。",
-        "lintRegex": "只返回语义问题（永不匹配的断言、空字符类等）。",
-        "explainRegex": "逐 token 的自然语言解释。",
-        "buildDiagram": "把正则 AST 布局成铁路图模型。",
-        "renderToSvg": "把图模型渲染成 SVG 字符串。",
-        "sourceColors": "每个字符的语法配色类别（用于源码高亮）。",
-        "sourceRanges": "每个字符对应的最小覆盖节点范围。",
-        "toRegexLiteral": "把 source + flags 拼成 /…/flags 字面量。"
+        "regexToSvg": "给定正则源串和可选 flags，一步返回独立、可主题化的 SVG 字符串；正则无法解析或永不匹配时返回 null。",
+        "parseRegex": "把源串解析成 regexpp AST 并校验，结果含 ok、ast（失败时为 null）以及同时覆盖语法错误和语义问题的 issues 数组。",
+        "lintRegex": "只跑语义检查，返回 issues 数组——永不匹配的断言、空字符类等；正则干净时为空数组。",
+        "explainRegex": "返回扁平的解释步骤列表，每步含 depth、语法类别、token 切片和自然语言描述；正则不合法时返回 null。",
+        "buildDiagram": "把解析好的 AST 布局成带坐标的铁路图模型，可直接渲染。",
+        "renderToSvg": "把图模型渲染成自包含的 SVG 字符串；传入 flags 可在 pattern 后展示它们。",
+        "sourceColors": "返回每个源字符的语法类别（或 null），用于高亮原始 pattern 文本。",
+        "sourceRanges": "返回每个源字符对应的、覆盖它的最小铁路图节点的起止偏移——用于把光标与悬停和铁路图联动。",
+        "toRegexLiteral": "把 source 和 flags 拼成合法的正则字面量，转义斜杠并处理空 pattern。"
     },
     "examples": {
         "date": "日期",
@@ -119,6 +119,25 @@
         "exLowerTitle": "更底层的控制",
         "exLowerDesc": "分两步：先把 AST 布局成图模型，再自行渲染成 SVG。",
         "api": "API 参考",
+        "types": "类型",
+        "typesIntro": "上面这些函数返回与接收的数据结构。",
+        "theme": "主题与配色",
+        "themeIntro": "每个渲染出的 SVG 都用 --rr-* 这组 CSS 自定义属性来着色，并把亮色默认值内联在 SVG 里，因此开箱即用、无需额外 CSS。想换色或加暗色主题，只要在包裹 SVG 的任意元素上设置这些变量即可——你只需覆盖想改的那几个，无需重新渲染。",
+        "themePalette": "语法配色",
+        "themePaletteIntro": "每个语法类别对应一种颜色，源码条、语法参考和铁路图的强调色共用它，所以同一个 token 在各处颜色一致。下面是 --rr-syntax-* 变量及其亮色默认值。",
+        "themeStructure": "结构与暗色",
+        "themeStructureIntro": "除配色外，这些变量控制轨道、文字和标签——暗色主题主要就调它们——以及源码条的悬停高亮。",
+        "palette": {
+            "literal": "普通字面字符",
+            "charset": "简写字符集与点号",
+            "class": "方括号字符类",
+            "anchor": "锚点与单词边界",
+            "quantifier": "量词与定量重复",
+            "group": "捕获组与非捕获组",
+            "lookaround": "前瞻与后顾",
+            "backref": "反向引用",
+            "alternation": "分支择一"
+        },
         "copy": "复制",
         "copied": "已复制到剪贴板"
     },

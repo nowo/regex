@@ -9,15 +9,15 @@
         "home": "Home"
     },
     "api": {
-        "regexToSvg": "One-shot: regex → standalone SVG string; null if invalid or semantically broken.",
-        "parseRegex": "Parse to an AST and validate; the result has ok, ast and issues (syntax + semantic).",
-        "lintRegex": "Just the semantic issues (never-matching assertions, empty classes, …).",
-        "explainRegex": "Token-by-token, plain-language explanation.",
-        "buildDiagram": "Lay out a regex AST into a railroad-diagram model.",
-        "renderToSvg": "Render a diagram model to an SVG string.",
-        "sourceColors": "Per-character syntax category (for source highlighting).",
-        "sourceRanges": "Per-character smallest covering node range.",
-        "toRegexLiteral": "Build a /…/flags literal from source + flags."
+        "regexToSvg": "One call from a regex source and optional flags to a standalone, themeable SVG string. Returns null when the regex fails to parse or can never match.",
+        "parseRegex": "Parses the source to a regexpp AST and validates it. The result carries ok, the ast (null on failure) and an issues array covering both syntax errors and semantic problems.",
+        "lintRegex": "Runs only the semantic checks and returns the issues array — never-matching assertions, empty character classes and the like. Empty for a clean regex.",
+        "explainRegex": "Returns a flat list of steps, each with its depth, syntax category, token slice and a plain-language description. Null when the regex is invalid.",
+        "buildDiagram": "Lays out a parsed AST into a positioned railroad-diagram model with coordinates, ready to render.",
+        "renderToSvg": "Renders a diagram model to a self-contained SVG string; pass the flags to show them after the pattern.",
+        "sourceColors": "Returns the syntax category of each source character (or null), for highlighting the raw pattern text.",
+        "sourceRanges": "Returns, per source character, the start and end offsets of the smallest diagram node covering it — used to sync caret and hover with the diagram.",
+        "toRegexLiteral": "Assembles a valid regex literal from a source and flags, escaping slashes and handling the empty pattern."
     },
     "examples": {
         "date": "Date",
@@ -119,6 +119,25 @@
         "exLowerTitle": "Lower-level control",
         "exLowerDesc": "Two steps: lay out the AST into a model, then render it to SVG yourself.",
         "api": "API reference",
+        "types": "Types",
+        "typesIntro": "The shapes returned and accepted by the functions above.",
+        "theme": "Theming and colors",
+        "themeIntro": "Every rendered SVG is styled with --rr-* CSS custom properties and ships with light-mode fallbacks baked in, so it looks right out of the box. To recolor it or add a dark theme, set the variables on any element that wraps the SVG — you only override what you want to change, and nothing has to be re-rendered.",
+        "themePalette": "Syntax palette",
+        "themePaletteIntro": "One color per syntax category, shared by the source band, the syntax reference and the diagram's accents so a token reads the same color everywhere. These are the --rr-syntax-* variables and their light-mode defaults.",
+        "themeStructure": "Structure and dark mode",
+        "themeStructureIntro": "Beyond the palette, these variables drive the rail, text and labels — most of what a dark theme needs — plus the source-band hover highlight.",
+        "palette": {
+            "literal": "Plain literal characters",
+            "charset": "Shorthand character sets and the dot",
+            "class": "Bracketed character classes",
+            "anchor": "Anchors and word boundaries",
+            "quantifier": "Quantifiers and counted repeats",
+            "group": "Capturing and non-capturing groups",
+            "lookaround": "Lookahead and lookbehind",
+            "backref": "Backreferences",
+            "alternation": "Alternation between branches"
+        },
         "copy": "Copy",
         "copied": "Copied to clipboard"
     },

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // A Shiki-highlighted code block with a hover copy button. Uses the module's dual
 // theme (CSS variables) so it follows the app's color mode without re-rendering.
-const props = defineProps<{ code: string, lang?: 'typescript' | 'bash' }>()
+const props = defineProps<{ code: string, lang?: 'typescript' | 'bash' | 'css' }>()
 const { t } = useI18n()
 const toast = useToast()
 const { copy } = useClipboard()

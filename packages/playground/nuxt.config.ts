@@ -6,7 +6,7 @@ export default defineNuxtConfig({
         'nuxt-shiki',
     ],
     shiki: {
-        bundledLangs: ['typescript', 'bash'],
+        bundledLangs: ['typescript', 'bash', 'css'],
         bundledThemes: ['github-light', 'github-dark'],
         // Dual theme → CSS-variable output that switches with the `.dark` class.
         defaultTheme: { light: 'github-light', dark: 'github-dark' },
