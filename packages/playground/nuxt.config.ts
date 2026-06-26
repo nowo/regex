@@ -1,5 +1,10 @@
 import process from 'node:process'
 
+// Pages deploys under /<repo>/; normalize to a trailing slash so asset hrefs
+// concatenate correctly whether or not the env value carries one.
+const rawBase = process.env.NUXT_APP_BASE_URL || '/'
+const baseURL = rawBase.endsWith('/') ? rawBase : `${rawBase}/`
+
 export default defineNuxtConfig({
     modules: [
         '@nuxt/ui',
@@ -35,7 +40,7 @@ export default defineNuxtConfig({
         head: {
             link: [
                 // baseURL-aware so the icon resolves under a Pages sub-path (/<repo>/)
-                { rel: 'icon', type: 'image/svg+xml', href: `${process.env.NUXT_APP_BASE_URL || '/'}favicon.svg` },
+                { rel: 'icon', type: 'image/svg+xml', href: `${baseURL}favicon.svg` },
             ],
         },
     },
