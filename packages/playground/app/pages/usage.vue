@@ -76,6 +76,8 @@ const apis = computed(() => [
     { sig: 'parseRegex(source, flags?) → { ok, ast, issues }', desc: t('api.parseRegex') },
     { sig: 'lintRegex(source, flags?) → RegexIssue[]', desc: t('api.lintRegex') },
     { sig: 'explainRegex(source, flags?) → ExplainItem[] | null', desc: t('api.explainRegex') },
+    { sig: 'formatExplain(desc, messages?) → string', desc: t('api.formatExplain') },
+    { sig: 'EXPLAIN_EN: ExplainMessages', desc: t('api.explainEn') },
     { sig: 'buildDiagram(ast) → Diagram', desc: t('api.buildDiagram') },
     { sig: 'renderToSvg(diagram, flags?) → string', desc: t('api.renderToSvg') },
     { sig: 'sourceColors(source, flags?) → (SyntaxCategory | null)[] | null', desc: t('api.sourceColors') },
@@ -97,15 +99,51 @@ interface ExplainItem {
   depth: number       // nesting level, for indentation
   cat: SyntaxCategory // the token's syntax category (drives the shared color)
   token: string       // the source slice this line describes
-  text: string        // plain-language description
+  desc: ExplainDesc   // language-neutral description — render this to localize
+  text: string        // English rendering of desc, for zero-config use
   start?: number
   end?: number
 }
+
+// Language-neutral explanation node — switch on kind to localize it.
+// (shape simplified; see the .d.ts for the exact discriminated unions)
+type ExplainDesc =
+  | { kind: 'char', value: string }
+  | { kind: 'text', value: string }
+  | { kind: 'charset', set: 'any' | 'digit' | 'word' | 'space' | 'property', negate?: boolean, raw?: string }
+  | { kind: 'class', negate: boolean, members: ClassMember[] }
+  | { kind: 'anchor', at: 'start' | 'end' | 'word', negate?: boolean }
+  | { kind: 'lookaround', dir: 'ahead' | 'behind', negate: boolean }
+  | { kind: 'quantifier', min: number, max: number, greedy: boolean }
+  | { kind: 'group', capturing: boolean, index?: number, name?: string }
+  | { kind: 'backref', index?: number }
+  | { kind: 'option', n: number }
+  // …and 'space' / 'classExpr'
 
 // Color-category keys — also the --rr-syntax-* variable suffixes
 type SyntaxCategory =
   | 'literal' | 'charset' | 'class' | 'anchor' | 'quantifier'
   | 'group' | 'lookaround' | 'backref' | 'alternation'`
+
+// How a library consumer localizes the explanation: pass formatExplain a
+// translated message table — partial is fine, omitted keys fall back to English.
+const localizeExample = String.raw`import { explainRegex, formatExplain } from '@wzo/regex-diagram'
+
+// Zero config — item.text is ready-made English:
+for (const it of explainRegex('a+', 'i') ?? [])
+  console.log(it.text)
+
+// Localize — hand formatExplain your translated table (no i18n library needed).
+// Templates use {placeholder} slots; any key you omit stays English.
+const zh = {
+  csDigit: '数字（0-9）',
+  qExact: '恰好重复 {n} 次',
+  qRange: '重复 {min} 到 {max} 次',
+  groupNamed: '捕获组 #{index}（命名为 "{name}"）',
+  // …only the keys you want to translate
+}
+for (const it of explainRegex('(?<y>\\d{2,4})') ?? [])
+  console.log(formatExplain(it.desc, zh))`
 
 // The shared syntax palette: one color per category, with its light-mode default
 // and the regex tokens it colors. Swatches use the live CSS var, so they track
@@ -232,6 +270,16 @@ const cssStructure = String.raw`.dark .regex-diagram {
                 {{ t('usage.typesIntro') }}
             </p>
             <CodeBlock :code="types" />
+        </section>
+
+        <section class="space-y-2">
+            <h2 class="text-sm font-semibold text-highlighted">
+                {{ t('usage.localize') }}
+            </h2>
+            <p class="text-sm text-muted leading-relaxed">
+                {{ t('usage.localizeIntro') }}
+            </p>
+            <CodeBlock :code="localizeExample" />
         </section>
 
         <section class="space-y-4">

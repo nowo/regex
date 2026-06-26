@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { explainRegex, sourceColors } from '@wzo/regex-diagram'
+import { explainRegex, formatExplain, sourceColors } from '@wzo/regex-diagram'
 
 const props = defineProps<{ pattern: string, flags: string }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const items = computed(() => explainRegex(props.pattern, props.flags))
 // One coloring for the whole pattern; each line slices its own token's colors out
 // of it, so the explanation matches the diagram's source band character for character.
 const colors = computed(() => sourceColors(props.pattern, props.flags))
+// Localize the explanation by handing formatExplain a translated table; English
+// (the core default) needs no table at all.
+const messages = computed(() => (locale.value === 'zh' ? EXPLAIN_ZH : undefined))
 </script>
 
 <template>
@@ -24,7 +27,7 @@ const colors = computed(() => sourceColors(props.pattern, props.flags))
                     :text="it.token"
                     :colors="it.start != null && colors ? colors.slice(it.start, it.end) : undefined"
                     :fallback-cat="it.cat" />
-                <span class="text-muted">{{ it.text }}</span>
+                <span class="text-muted">{{ formatExplain(it.desc, messages) }}</span>
             </li>
         </ul>
         <p v-else class="text-dimmed text-sm">
