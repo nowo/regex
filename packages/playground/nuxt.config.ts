@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 export default defineNuxtConfig({
     modules: [
         '@nuxt/ui',
@@ -32,7 +34,8 @@ export default defineNuxtConfig({
     app: {
         head: {
             link: [
-                { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+                // baseURL-aware so the icon resolves under a Pages sub-path (/<repo>/)
+                { rel: 'icon', type: 'image/svg+xml', href: `${process.env.NUXT_APP_BASE_URL || '/'}favicon.svg` },
             ],
         },
     },
