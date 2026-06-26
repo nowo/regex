@@ -8,6 +8,7 @@ const baseURL = rawBase.endsWith('/') ? rawBase : `${rawBase}/`
 export default defineNuxtConfig({
     modules: [
         '@nuxt/ui',
+        'nuxt-content-twoslash',
         '@nuxt/content',
         '@nuxtjs/i18n',
         '@vueuse/nuxt',
