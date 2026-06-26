@@ -8,18 +8,8 @@
     "nav": {
         "home": "Home"
     },
-    "api": {
-        "regexToSvg": "One call from a regex source and optional flags to a standalone, themeable SVG string. Returns null when the regex fails to parse or can never match.",
-        "parseRegex": "Parses the source to a regexpp AST and validates it. The result carries ok, the ast (null on failure) and an issues array covering both syntax errors and semantic problems.",
-        "lintRegex": "Runs only the semantic checks and returns the issues array — never-matching assertions, empty character classes and the like. Empty for a clean regex.",
-        "explainRegex": "Returns a flat list of steps, each with its depth, syntax category, token slice and a plain-language description. Null when the regex is invalid.",
-        "formatExplain": "Renders one ExplainDesc to a string using a message table. Pass a partial table to localize — any key you omit falls back to the built-in English.",
-        "explainEn": "The built-in English message table that formatExplain defaults to. Use it as the base when you only translate part of the table.",
-        "buildDiagram": "Lays out a parsed AST into a positioned railroad-diagram model with coordinates, ready to render.",
-        "renderToSvg": "Renders a diagram model to a self-contained SVG string; pass the flags to show them after the pattern.",
-        "sourceColors": "Returns the syntax category of each source character (or null), for highlighting the raw pattern text.",
-        "sourceRanges": "Returns, per source character, the start and end offsets of the smallest diagram node covering it — used to sync caret and hover with the diagram.",
-        "toRegexLiteral": "Assembles a valid regex literal from a source and flags, escaping slashes and handling the empty pattern."
+    "docs": {
+        "onThisPage": "On this page"
     },
     "examples": {
         "date": "Date",
@@ -98,50 +88,7 @@
         "invalid": "Fix the regex to see an explanation."
     },
     "code": {
-        "title": "JS code"
-    },
-    "usage": {
-        "subtitle": "The diagram engine is a standalone npm package.",
-        "intro": "It parses a regex into an AST, lays it out as a railroad diagram, and renders a self-contained, themeable SVG — plus syntax/semantic validation and a token-by-token plain-language explanation. Framework-agnostic, usable in any JS/TS project.",
-        "features": "Features",
-        "featureSyntax": "Modern syntax: named groups, lookbehind, Unicode properties, v-flag set operations",
-        "featureSvg": "Self-contained SVG, themeable via CSS variables (incl. dark mode), exportable",
-        "featureLint": "Parsing validates too: syntax errors and semantic issues (never-matching assertions, empty classes)",
-        "featureExplain": "Token-by-token, plain-language explanation",
-        "featureAgnostic": "Framework-agnostic pure functions, zero runtime dependencies",
-        "install": "Install",
-        "quickstart": "Quick start",
-        "examples": "Examples",
-        "exRenderTitle": "Render to SVG",
-        "exRenderDesc": "Get a self-contained SVG string in one call — drop it into the page or save it to a file.",
-        "exValidateTitle": "Validate a regex",
-        "exValidateDesc": "parseRegex returns syntax errors and semantic issues alike (e.g. an assertion that never matches).",
-        "exExplainTitle": "Explain a regex",
-        "exExplainDesc": "Get a token-by-token explanation and print it indented by depth.",
-        "exLowerTitle": "Lower-level control",
-        "exLowerDesc": "Two steps: lay out the AST into a model, then render it to SVG yourself.",
-        "api": "API reference",
-        "types": "Types",
-        "typesIntro": "The shapes returned and accepted by the functions above.",
-        "localize": "Localizing the explanation",
-        "localizeIntro": "explainRegex gives each line a ready-made English text plus a language-neutral desc. For other languages, call formatExplain(desc, messages) with a translated table — it can be partial, and any key you omit falls back to English. No i18n library required; the English text is itself rendered this way, so the two never drift.",
-        "theme": "Theming and colors",
-        "themeIntro": "Every rendered SVG is styled with --rr-* CSS custom properties and ships with light-mode fallbacks baked in, so it looks right out of the box. To recolor it or add a dark theme, set the variables on any element that wraps the SVG — you only override what you want to change, and nothing has to be re-rendered.",
-        "themePalette": "Syntax palette",
-        "themePaletteIntro": "One color per syntax category, shared by the source band, the syntax reference and the diagram's accents so a token reads the same color everywhere. These are the --rr-syntax-* variables and their light-mode defaults.",
-        "themeStructure": "Structure and dark mode",
-        "themeStructureIntro": "Beyond the palette, these variables drive the rail, text and labels — most of what a dark theme needs — plus the source-band hover highlight.",
-        "palette": {
-            "literal": "Plain literal characters",
-            "charset": "Shorthand character sets and the dot",
-            "class": "Bracketed character classes",
-            "anchor": "Anchors and word boundaries",
-            "quantifier": "Quantifiers and counted repeats",
-            "group": "Capturing and non-capturing groups",
-            "lookaround": "Lookahead and lookbehind",
-            "backref": "Backreferences",
-            "alternation": "Alternation between branches"
-        },
+        "title": "JS code",
         "copy": "Copy",
         "copied": "Copied to clipboard"
     },

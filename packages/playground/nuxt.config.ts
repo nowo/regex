@@ -1,15 +1,24 @@
 export default defineNuxtConfig({
     modules: [
         '@nuxt/ui',
+        '@nuxt/content',
         '@nuxtjs/i18n',
         '@vueuse/nuxt',
-        'nuxt-shiki',
     ],
-    shiki: {
-        bundledLangs: ['typescript', 'bash', 'css'],
-        bundledThemes: ['github-light', 'github-dark'],
-        // Dual theme → CSS-variable output that switches with the `.dark` class.
-        defaultTheme: { light: 'github-light', dark: 'github-dark' },
+    content: {
+        // Use Node's built-in node:sqlite (Node 22+) instead of the native
+        // better-sqlite3 addon, so no compile step is needed locally or in CI.
+        experimental: { sqliteConnector: 'native' },
+        build: {
+            markdown: {
+                // Same dual theme as the dynamic code panels, so docs code blocks
+                // match the rest of the app in light and dark mode.
+                highlight: {
+                    theme: { default: 'github-light', dark: 'github-dark' },
+                    langs: ['ts', 'js', 'bash', 'css', 'json'],
+                },
+            },
+        },
     },
     css: ['~/assets/css/main.css'],
     i18n: {

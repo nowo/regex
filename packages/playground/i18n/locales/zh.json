@@ -8,18 +8,8 @@
     "nav": {
         "home": "首页"
     },
-    "api": {
-        "regexToSvg": "给定正则源串和可选 flags，一步返回独立、可主题化的 SVG 字符串；正则无法解析或永不匹配时返回 null。",
-        "parseRegex": "把源串解析成 regexpp AST 并校验，结果含 ok、ast（失败时为 null）以及同时覆盖语法错误和语义问题的 issues 数组。",
-        "lintRegex": "只跑语义检查，返回 issues 数组——永不匹配的断言、空字符类等；正则干净时为空数组。",
-        "explainRegex": "返回扁平的解释步骤列表，每步含 depth、语法类别、token 切片和自然语言描述；正则不合法时返回 null。",
-        "formatExplain": "用一张文案表把单个 ExplainDesc 渲染成字符串；传部分表即可本地化，未填的键回退到内置英文。",
-        "explainEn": "formatExplain 默认使用的内置英文文案表；只翻译一部分时，可以它为基础来扩展。",
-        "buildDiagram": "把解析好的 AST 布局成带坐标的铁路图模型，可直接渲染。",
-        "renderToSvg": "把图模型渲染成自包含的 SVG 字符串；传入 flags 可在 pattern 后展示它们。",
-        "sourceColors": "返回每个源字符的语法类别（或 null），用于高亮原始 pattern 文本。",
-        "sourceRanges": "返回每个源字符对应的、覆盖它的最小铁路图节点的起止偏移——用于把光标与悬停和铁路图联动。",
-        "toRegexLiteral": "把 source 和 flags 拼成合法的正则字面量，转义斜杠并处理空 pattern。"
+    "docs": {
+        "onThisPage": "本页目录"
     },
     "examples": {
         "date": "日期",
@@ -98,50 +88,7 @@
         "invalid": "修正正则后显示解释。"
     },
     "code": {
-        "title": "JS 代码"
-    },
-    "usage": {
-        "subtitle": "这套铁路图引擎是一个独立的 npm 包。",
-        "intro": "它把正则解析成 AST、布局成铁路图，再渲染为自包含、可主题化的 SVG；同时提供语法/语义校验和逐 token 的自然语言解释。框架无关，可用于任意 JS/TS 项目。",
-        "features": "特性",
-        "featureSyntax": "支持现代语法：命名组、前后行断言、Unicode 属性、v 标志集合运算",
-        "featureSvg": "输出自包含 SVG，用 CSS 变量即可主题化（含暗色），可直接导出",
-        "featureLint": "解析即校验：语法错误与语义问题（永不匹配的断言、空字符类）",
-        "featureExplain": "逐 token 的自然语言解释",
-        "featureAgnostic": "框架无关的纯函数 API，零运行时依赖",
-        "install": "安装",
-        "quickstart": "快速开始",
-        "examples": "用法示例",
-        "exRenderTitle": "渲染为 SVG",
-        "exRenderDesc": "一步拿到自包含的 SVG 字符串，可直接插入页面或保存为文件。",
-        "exValidateTitle": "校验正则",
-        "exValidateDesc": "parseRegex 同时返回语法错误和语义问题（如永不匹配的断言）。",
-        "exExplainTitle": "解释正则",
-        "exExplainDesc": "拿到逐 token 的解释,按层级缩进打印。",
-        "exLowerTitle": "更底层的控制",
-        "exLowerDesc": "分两步：先把 AST 布局成图模型，再自行渲染成 SVG。",
-        "api": "API 参考",
-        "types": "类型",
-        "typesIntro": "上面这些函数返回与接收的数据结构。",
-        "localize": "本地化解释",
-        "localizeIntro": "explainRegex 给每一行提供现成的英文 text 和语言无关的 desc。要换语言,就调用 formatExplain(desc, messages) 并传入一张翻译好的文案表——可以只翻译一部分,没翻的自动回退英文。不依赖任何 i18n 库;英文 text 本身也是这样渲染出来的,两者永不偏离。",
-        "theme": "主题与配色",
-        "themeIntro": "每个渲染出的 SVG 都用 --rr-* 这组 CSS 自定义属性来着色，并把亮色默认值内联在 SVG 里，因此开箱即用、无需额外 CSS。想换色或加暗色主题，只要在包裹 SVG 的任意元素上设置这些变量即可——你只需覆盖想改的那几个，无需重新渲染。",
-        "themePalette": "语法配色",
-        "themePaletteIntro": "每个语法类别对应一种颜色，源码条、语法参考和铁路图的强调色共用它，所以同一个 token 在各处颜色一致。下面是 --rr-syntax-* 变量及其亮色默认值。",
-        "themeStructure": "结构与暗色",
-        "themeStructureIntro": "除配色外，这些变量控制轨道、文字和标签——暗色主题主要就调它们——以及源码条的悬停高亮。",
-        "palette": {
-            "literal": "普通字面字符",
-            "charset": "简写字符集与点号",
-            "class": "方括号字符类",
-            "anchor": "锚点与单词边界",
-            "quantifier": "量词与定量重复",
-            "group": "捕获组与非捕获组",
-            "lookaround": "前瞻与后顾",
-            "backref": "反向引用",
-            "alternation": "分支择一"
-        },
+        "title": "JS 代码",
         "copy": "复制",
         "copied": "已复制到剪贴板"
     },
