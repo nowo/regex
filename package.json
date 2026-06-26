@@ -12,7 +12,8 @@
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "play:dev": "pnpm --filter playground dev",
-        "play:build": "pnpm --filter playground build"
+        "play:build": "pnpm --filter playground build",
+        "release": "pnpm --filter @wzo/regex-diagram release"
     },
     "devDependencies": {
         "@wzo/eslint-config": "^0.0.2",

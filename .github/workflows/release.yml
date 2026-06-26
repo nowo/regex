@@ -1,0 +1,46 @@
+name: Release
+
+# changelogen 生成的 GitHub Release 发布后触发
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile --config.trustPolicy=disabled
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm --filter @wzo/regex-diagram typecheck
+
+      - name: Test
+        run: pnpm --filter @wzo/regex-diagram test
+
+      - name: Build
+        run: pnpm --filter @wzo/regex-diagram build
+
+      # 不写包名，从 packages/core 的 package.json 读
+      # --access public：发布 scoped 包必需
+      - name: Publish to npm
+        working-directory: packages/core
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
