@@ -48,8 +48,7 @@ const surroundLinks = computed(() =>
         <div class="grid gap-8 lg:grid-cols-[180px_minmax(0,1fr)_180px]">
             <aside class="hidden lg:block lg:sticky lg:top-20 lg:self-start">
                 <nav class="flex flex-col gap-0.5 text-sm">
-                    <ULink v-for="item in links" :key="item.path"
-                        :to="localePath(`/docs${item.path}`)"
+                    <ULink v-for="item in links" :key="item.path" :to="localePath(`/docs${item.path}`)"
                         class="rounded-md px-2.5 py-1.5"
                         :class="path === item.path ? 'bg-elevated text-highlighted font-medium' : 'text-muted hover:text-highlighted'">
                         {{ item.title }}
@@ -62,7 +61,8 @@ const surroundLinks = computed(() =>
                 <p v-else class="text-dimmed">
                     Not found.
                 </p>
-                <UContentSurround v-if="page" :surround="surroundLinks" class="mt-12" />
+                <UContentSurround v-if="page" :surround="surroundLinks"
+                    class="mt-12 mb-10 border-t border-default pt-12" />
             </article>
 
             <UContentToc v-if="toc.length" :links="toc" :title="t('docs.onThisPage')" highlight
