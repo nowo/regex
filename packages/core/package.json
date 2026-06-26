@@ -1,7 +1,7 @@
 {
     "name": "@wzo/regex-diagram",
     "type": "module",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "description": "Framework-agnostic regular-expression railroad-diagram visualizer (parse + layout + render)",
     "author": "nowo",
     "license": "MIT",
