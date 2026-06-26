@@ -17,8 +17,9 @@ function toggleLocale() {
         </template>
 
         <template #right>
-            <UButton :to="localePath('usage')" icon="i-lucide-book-open" color="neutral" variant="ghost">
-                <span class="font-mono text-xs">@wzo/regex-diagram</span>
+            <UButton :to="localePath('usage')" icon="i-lucide-book-open" color="neutral" variant="ghost"
+                aria-label="@wzo/regex-diagram">
+                <span class="hidden font-mono text-xs sm:inline">@wzo/regex-diagram</span>
             </UButton>
             <UButton :label="locale === 'en' ? '中文' : 'EN'" icon="i-lucide-languages" color="neutral" variant="ghost"
                 @click="toggleLocale" />
